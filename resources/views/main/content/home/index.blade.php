@@ -38,21 +38,9 @@
         <div class="col-md-8 col-lg-6 vstack gap-4">
 
             <!-- Story START -->
-            <div class="d-flex gap-2 mb-n3">
-                <div class="position-relative">
-                    <div
-                        class="card border border-2 border-dashed h-150px px-4 px-sm-5 shadow-none d-flex align-items-center justify-content-center text-center">
-                        <div>
-                            <a class="stretched-link btn btn-light rounded-circle icon-md" href="#!"><i
-                                    class="fa-solid fa-plus"></i></a>
-                            <h6 class="mt-2 mb-0 small">Post a Story</h6>
-                        </div>
-                    </div>
-                </div>
+            
+                @include('main.content.home.stories')
 
-                <!-- Stories -->
-                <div id="stories" class="storiesWrapper stories-square stories user-icon carousel scroll-enable"></div>
-            </div>
             <!-- Story END -->
 
             <!-- Share feed START -->
@@ -360,6 +348,8 @@
 @section('script')
 
     <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+
+    @include('main.content.home.js.stories')
 
     @include('main.content.home.js.index')
 

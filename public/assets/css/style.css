@@ -17507,7 +17507,7 @@ a.badge:hover {
 }
 
 .stories .story > .item-link > .item-preview {
-  border-radius: 50%;
+  /* border-radius: 50%; */
   padding: 2px;
   background: var(--bs-primary);
   height: 5.125rem !important;
@@ -17520,7 +17520,7 @@ a.badge:hover {
 }
 
 .stories .story > .item-link > .item-preview img {
-  border-radius: 50%;
+  /* border-radius: 50%; */
   border: 2px solid #fff;
 }
 

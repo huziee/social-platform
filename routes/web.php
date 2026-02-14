@@ -6,6 +6,7 @@ use App\Http\Controllers\FollowController;
 use App\Http\Controllers\MyAccountController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\LikeController;
+use App\Http\Controllers\StoryController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -43,6 +44,10 @@ Route::post('/like/{post}', [LikeController::class, 'togglestatus']);
     Route::get('/pp', [MyAccountController::class, 'privacyTerms'])->name('home.pp');
     Route::get('/help', [MyAccountController::class, 'help'])->name('home.help');
     Route::get('/chat', [MyAccountController::class, 'chat'])->name('home.chat');
+
+    Route::get('/get-stories',[StoryController::class, 'index'])->name('stories.get');
+    Route::post('/stories/upload',[StoryController::class, 'store'])->name('stories.store');
+
 
 
 

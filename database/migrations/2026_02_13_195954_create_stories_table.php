@@ -13,8 +13,9 @@ return new class extends Migration {
         Schema::create('stories', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('path');
-            $table->enum('type', ['image', 'video'])->default('image');
+            $table->string('media_path');
+            $table->enum('type', ['image', 'video']);
+            $table->timestamp('expires_at'); // Stories usually last 24 hours
             $table->timestamps();
         });
     }

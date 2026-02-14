@@ -46,4 +46,32 @@
         .insta-btn:hover {
             background: rgba(0, 0, 0, 0.8);
         }
+        .stories.carousel .story>.item-link>.item-preview {
+            height: 100% !important;
+        }
+        .stories.carousel .story>.item-link {
+                height: 110px !important;
+                width: 105px !important;
+
+        }
+        .stories .story > .item-link > .item-preview {
+            width: 100% !important
+        }
+        #stories-wrapper {
+            width: 100% !important;
+        }
+        #stories-wrapper .story {
+            width: 100% !important;
+            margin-right: 20px;
+        }
+        #stories-wrapper .story .item-preview {
+            border-radius: 12px ;
+        }
+        #stories-wrapper .story .item-preview img {
+            border-radius: 10px ;
+        }
+        .stories.carousel .story>.item-link>.info {
+            color: #fff;
+            
+        }
     </style>
