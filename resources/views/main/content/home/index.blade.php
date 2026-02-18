@@ -329,7 +329,6 @@
 
     <!-- Modal create Feed photo START -->
     @include('main.modals.homeModals.postCreateModal')
-
     <!-- Modal create Feed photo END -->
 
     <!-- Modal create Feed video START -->

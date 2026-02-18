@@ -74,4 +74,7 @@
             color: #fff;
             
         }
+        #zuck-modal {
+    z-index: 10000 !important;
+}
     </style>
