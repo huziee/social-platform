@@ -77,4 +77,23 @@
         #zuck-modal {
     z-index: 10000 !important;
 }
+.delete-story-btn{
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    z-index: 9999;
+}
+button .ff-btn{
+    transition: transform 0.2s ease;
+}
+
+button.processing i{
+    transform: scale(0.8);
+}
     </style>

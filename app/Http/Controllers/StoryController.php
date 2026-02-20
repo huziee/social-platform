@@ -52,4 +52,23 @@ class StoryController extends Controller
 
         return response()->json(['success' => true, 'data' => $uploadedStories]);
     }
+
+    public function destroy($id)
+{
+    $story = Story::findOrFail($id);
+
+    // Only owner can delete
+    if ($story->user_id !== auth()->id()) {
+        return response()->json(['success' => false], 403);
+    }
+
+    // Delete file if needed
+    if ($story->media_path && file_exists(public_path($story->media_path))) {
+        unlink(public_path($story->media_path));
+    }
+
+    $story->delete();
+
+    return response()->json(['success' => true]);
+}
 }

@@ -30,15 +30,14 @@
                                     <p class="mb-0 small text-truncate">{{ $us->username }}</p>
                                 </div>
 
-                                <!-- FOLLOW BUTTON -->
                                 <button
                                     class="btn btn-primary-soft rounded-circle icon-md ms-auto
                                     {{ auth()->user()->isFollowing($us->id) ? 'btn-secondary' : 'btn-primary' }}"
                                     onclick="toggleFollow({{ $us->id }}, this)">
 
                                     <i
-                                        class="bi
-                                    {{ auth()->user()->isFollowing($us->id) ? 'bi-person-check-fill' : 'bi-person-plus' }}">
+                                        class="ff-btn bi
+                                        {{ auth()->user()->isFollowing($us->id) ? 'bi-person-check-fill' : 'bi-person-plus' }}">
                                     </i>
 
                                 </button>
@@ -47,78 +46,6 @@
                         @endif
                     @endforeach
 
-                    <!-- Connection item END -->
-                    <!-- Connection item START -->
-                    {{-- <div class="hstack gap-2 mb-3">
-                        <!-- Avatar -->
-                        <div class="avatar avatar-story">
-                            <a href="#!"> <img class="avatar-img rounded-circle" src="assets/images/avatar/05.jpg"
-                                    alt=""> </a>
-                        </div>
-                        <!-- Title -->
-                        <div class="overflow-hidden">
-                            <a class="h6 mb-0" href="#!">Amanda Reed </a>
-                            <p class="mb-0 small text-truncate">Web Developer</p>
-                        </div>
-                        <!-- Button -->
-                        <a class="btn btn-primary-soft rounded-circle icon-md ms-auto" href="#"><i
-                                class="fa-solid fa-plus"> </i></a>
-                    </div>
-                    <!-- Connection item END -->
-
-                    <!-- Connection item START -->
-                    <div class="hstack gap-2 mb-3">
-                        <!-- Avatar -->
-                        <div class="avatar">
-                            <a href="#"> <img class="avatar-img rounded-circle" src="assets/images/avatar/11.jpg"
-                                    alt=""> </a>
-                        </div>
-                        <!-- Title -->
-                        <div class="overflow-hidden">
-                            <a class="h6 mb-0" href="#!">Billy Vasquez </a>
-                            <p class="mb-0 small text-truncate">News anchor</p>
-                        </div>
-                        <!-- Button -->
-                        <a class="btn btn-primary rounded-circle icon-md ms-auto" href="#"><i
-                                class="bi bi-person-check-fill"> </i></a>
-                    </div>
-                    <!-- Connection item END -->
-
-                    <!-- Connection item START -->
-                    <div class="hstack gap-2 mb-3">
-                        <!-- Avatar -->
-                        <div class="avatar">
-                            <a href="#"> <img class="avatar-img rounded-circle" src="assets/images/avatar/01.jpg"
-                                    alt=""> </a>
-                        </div>
-                        <!-- Title -->
-                        <div class="overflow-hidden">
-                            <a class="h6 mb-0" href="#!">Lori Ferguson </a>
-                            <p class="mb-0 small text-truncate">Web Developer at StackBros</p>
-                        </div>
-                        <!-- Button -->
-                        <a class="btn btn-primary-soft rounded-circle icon-md ms-auto" href="#"><i
-                                class="fa-solid fa-plus"> </i></a>
-                    </div> --}}
-                    <!-- Connection item END -->
-
-                    <!-- Connection item START -->
-                    {{-- <div class="hstack gap-2 mb-3">
-                        <!-- Avatar -->
-                        <div class="avatar">
-                            <a href="#"> <img class="avatar-img rounded-circle"
-                                    src="assets/images/avatar/placeholder.jpg" alt=""> </a>
-                        </div>
-                        <!-- Title -->
-                        <div class="overflow-hidden">
-                            <a class="h6 mb-0" href="#!">Carolyn Ortiz </a>
-                            <p class="mb-0 small text-truncate">News anchor</p>
-                        </div>
-                        <!-- Button -->
-                        <a class="btn btn-primary-soft rounded-circle icon-md ms-auto" href="#"><i
-                                class="fa-solid fa-plus"> </i></a>
-                    </div> --}}
-                    <!-- Connection item END -->
 
                     <!-- View more button -->
                     <div class="d-grid mt-3">

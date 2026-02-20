@@ -147,7 +147,9 @@
 
 
     function toggleFollow(userId, element) {
-    // Prevent multiple clicks while processing
+
+    event.preventDefault(); // 🚫 stop # jump
+
     if (element.classList.contains('processing')) return;
     element.classList.add('processing');
 
@@ -155,31 +157,61 @@
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
+            'Accept': 'application/json'
         }
     })
     .then(res => res.json())
     .then(data => {
+
         if (data.status === 'success') {
-            // Update the UI instantly
+
+            const icon = element.querySelector('i');
+
             if (data.following) {
-                element.innerText = 'Following';
-                element.classList.replace('text-primary', 'text-secondary');
+
+                // ===== FOLLOWED STATE =====
+
+                element.classList.remove('text-primary', 'btn-primary');
+                element.classList.add('text-secondary', 'btn-secondary');
+
+                icon.classList.remove(
+                    'bi-person-plus',
+                    'bi-plus-circle-fill'
+                );
+
+                icon.classList.add(
+                    'bi-person-check-fill',
+                    'bi-check-circle-fill'
+                );
+
             } else {
-                element.innerText = 'Follow';
-                element.classList.replace('text-secondary', 'text-primary');
+
+                // ===== UNFOLLOWED STATE =====
+
+                element.classList.remove('text-secondary', 'btn-secondary');
+                element.classList.add('text-primary', 'btn-primary');
+
+                icon.classList.remove(
+                    'bi-person-check-fill',
+                    'bi-check-circle-fill'
+                );
+
+                icon.classList.add(
+                    'bi-person-plus',
+                    'bi-plus-circle-fill'
+                );
             }
         }
     })
     .catch(err => {
         console.error(err);
-        alert('Something went wrong. Please try again.');
+        alert('Something went wrong.');
     })
     .finally(() => {
         element.classList.remove('processing');
     });
 }
+
     function deletePost(postId) {
         if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) return;
 

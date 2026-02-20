@@ -47,6 +47,8 @@ Route::post('/like/{post}', [LikeController::class, 'togglestatus']);
 
     Route::get('/get-stories',[StoryController::class, 'index'])->name('stories.get');
     Route::post('/stories/upload',[StoryController::class, 'store'])->name('stories.store');
+    Route::delete('/delete-stories/{id}', [StoryController::class, 'destroy'])
+    ->name('stories.destroy');
 
 
 
