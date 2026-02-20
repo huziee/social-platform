@@ -3,6 +3,7 @@
 
     let tempDeletedImages = [];
     let tempReplacedImages = {};
+    let tempReplacedVideos = {};
 
     document.addEventListener("DOMContentLoaded", function() {
         initSliders();
@@ -101,39 +102,94 @@
         window.editPost = function(postId) {
             console.log(postId);
 
+            tempDeletedImages = [];
+            tempDeletedVideos = [];
+            tempReplacedImages = {};
+
             fetch(`/posts/${postId}/edit`)
                 .then(res => res.json())
                 .then(data => {
+                    console.log(data)
 
                     const post = data.post;
 
                     document.getElementById('edit_post_id').value = post.id;
                     document.getElementById('edit_caption').value = post.caption;
 
-                    let container = document.getElementById('editPostImage');
-                    container.innerHTML = '';
+                    const imageSection = document.getElementById('editImageSection');
+                    const videoSection = document.getElementById('editVideoSection');
 
-                    (post.images ?? []).forEach(image => {
-                        container.innerHTML += `
-                    <div class="col-4" id="image-${image.id}">
-                        <div class="card position-relative">
-                            <img src="${image.image.startsWith('http') ? image.image : '/' + image.image}"
-                                 class="img-fluid rounded">
+                    const imageContainer = document.getElementById('editPostImage');
+                    const videoContainer = document.getElementById('editPostVideo');
 
-                            <button type="button"
-                                class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1"
-                                onclick="deleteImage(event, ${image.id})">✕</button>
+                    // 🔥 RESET EVERYTHING FIRST
+                    imageSection.classList.add('d-none');
+                    videoSection.classList.add('d-none');
 
-                            <button type="button"
-                                class="btn btn-secondary btn-sm position-absolute bottom-0 end-0 m-1"
-                                onclick="triggerFile(${image.id})">✎</button>
+                    imageContainer.innerHTML = '';
+                    videoContainer.innerHTML = '';
 
-                            <input type="file" class="d-none"
-                                id="file-${image.id}"
-                                onchange="replaceImage(${image.id}, this)">
-                        </div>
-                    </div>`;
-                    });
+                    // ===== IMAGES =====
+                    if (post.images && post.images.length > 0) {
+
+                        imageSection.classList.remove('d-none');
+
+                        post.images.forEach(image => {
+                            imageContainer.innerHTML += `
+                        <div class="col-4" id="image-${image.id}">
+                            <div class="card position-relative">
+                                <img src="/${image.file_path}" class="img-fluid rounded">
+                                <button type="button"
+                                    class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1"
+                                    onclick="deleteImage(event, ${image.id})">✕</button>
+
+                                <button type="button"
+                                    class="btn btn-secondary btn-sm position-absolute bottom-0 end-0 m-1"
+                                    onclick="triggerFile(${image.id})">✎</button>
+
+                                <input type="file"
+                                    class="d-none"
+                                    id="file-${image.id}"
+                                    onchange="replaceImage(${image.id}, this)">
+                            </div>
+                        </div>`;
+                        });
+                    }
+
+                    // ===== VIDEOS =====
+                    if (post.videos && post.videos.length > 0) {
+
+                        videoSection.classList.remove('d-none');
+
+                        post.videos.forEach(video => {
+                            videoContainer.innerHTML += `
+        <div class="col-6" id="video-${video.id}">
+            <div class="card position-relative">
+
+                <video controls class="w-100 rounded">
+                    <source src="/${video.file_path}" type="video/mp4">
+                </video>
+
+                <!-- DELETE BUTTON -->
+                <button type="button"
+                    class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1"
+                    onclick="deleteVideo(event, ${video.id})">✕</button>
+
+                <!-- ✏️ EDIT BUTTON -->
+                <button type="button"
+                    class="btn btn-secondary btn-sm position-absolute bottom-0 end-0 m-1"
+                    onclick="triggerVideoFile(${video.id})">✏️</button>
+
+                <!-- HIDDEN FILE INPUT -->
+                <input type="file"
+                    accept="video/*"
+                    class="d-none"
+                    id="video-file-${video.id}"
+                    onchange="replaceVideo(${video.id}, this)">
+            </div>
+        </div>`;
+                        });
+                    }
 
                     new bootstrap.Modal(
                         document.getElementById('modalEditPost')
@@ -148,69 +204,69 @@
 
     function toggleFollow(userId, element) {
 
-    event.preventDefault(); // 🚫 stop # jump
+        event.preventDefault(); // 🚫 stop # jump
 
-    if (element.classList.contains('processing')) return;
-    element.classList.add('processing');
+        if (element.classList.contains('processing')) return;
+        element.classList.add('processing');
 
-    fetch(`/follow/${userId}`, {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Accept': 'application/json'
-        }
-    })
-    .then(res => res.json())
-    .then(data => {
+        fetch(`/follow/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
 
-        if (data.status === 'success') {
+                if (data.status === 'success') {
 
-            const icon = element.querySelector('i');
+                    const icon = element.querySelector('i');
 
-            if (data.following) {
+                    if (data.following) {
 
-                // ===== FOLLOWED STATE =====
+                        // ===== FOLLOWED STATE =====
 
-                element.classList.remove('text-primary', 'btn-primary');
-                element.classList.add('text-secondary', 'btn-secondary');
+                        element.classList.remove('text-primary', 'btn-primary');
+                        element.classList.add('text-secondary', 'btn-secondary');
 
-                icon.classList.remove(
-                    'bi-person-plus',
-                    'bi-plus-circle-fill'
-                );
+                        icon.classList.remove(
+                            'bi-person-plus',
+                            'bi-plus-circle-fill'
+                        );
 
-                icon.classList.add(
-                    'bi-person-check-fill',
-                    'bi-check-circle-fill'
-                );
+                        icon.classList.add(
+                            'bi-person-check-fill',
+                            'bi-check-circle-fill'
+                        );
 
-            } else {
+                    } else {
 
-                // ===== UNFOLLOWED STATE =====
+                        // ===== UNFOLLOWED STATE =====
 
-                element.classList.remove('text-secondary', 'btn-secondary');
-                element.classList.add('text-primary', 'btn-primary');
+                        element.classList.remove('text-secondary', 'btn-secondary');
+                        element.classList.add('text-primary', 'btn-primary');
 
-                icon.classList.remove(
-                    'bi-person-check-fill',
-                    'bi-check-circle-fill'
-                );
+                        icon.classList.remove(
+                            'bi-person-check-fill',
+                            'bi-check-circle-fill'
+                        );
 
-                icon.classList.add(
-                    'bi-person-plus',
-                    'bi-plus-circle-fill'
-                );
-            }
-        }
-    })
-    .catch(err => {
-        console.error(err);
-        alert('Something went wrong.');
-    })
-    .finally(() => {
-        element.classList.remove('processing');
-    });
-}
+                        icon.classList.add(
+                            'bi-person-plus',
+                            'bi-plus-circle-fill'
+                        );
+                    }
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Something went wrong.');
+            })
+            .finally(() => {
+                element.classList.remove('processing');
+            });
+    }
 
     function deletePost(postId) {
         if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) return;
@@ -265,6 +321,10 @@
         document.getElementById(`file-${imageId}`).click();
     }
 
+    function triggerVideoFile(videoId) {
+        document.getElementById(`video-file-${videoId}`).click();
+    }
+
     // Replace image (UI only, mark for replace)
     function replaceImage(imageId, input) {
         if (!input.files.length) return;
@@ -278,45 +338,33 @@
         reader.readAsDataURL(input.files[0]);
     }
 
-    function editPost(postId) {
-        tempDeletedImages = [];
-        tempReplacedImages = {};
+    function replaceVideo(videoId, input) {
 
-        fetch(`/posts/${postId}/edit`)
-            .then(res => res.json())
-            .then(data => {
-                const post = data.post;
+        if (!input.files.length) return;
 
-                document.getElementById('edit_post_id').value = post.id;
-                document.getElementById('edit_caption').value = post.caption;
+        const file = input.files[0];
 
-                let container = document.getElementById('editPostImage');
-                container.innerHTML = '';
+        // Store replaced video in temp object
+        if (!window.tempReplacedVideos) {
+            window.tempReplacedVideos = {};
+        }
 
-                (post.images ?? []).forEach(image => {
-                    container.innerHTML += `
-                <div class="col-4" id="image-${image.id}">
-                    <div class="card position-relative">
-                        <img src="${image.image.startsWith('http') ? image.image : '/' + image.image}"
-                             class="img-fluid rounded">
+        tempReplacedVideos[videoId] = file;
 
-                        <button type="button"
-                            class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1"
-                            onclick="deleteImage(event, ${image.id})">✕</button>
+        // Preview new video immediately
+        const videoURL = URL.createObjectURL(file);
 
-                        <button type="button"
-                            class="btn btn-secondary btn-sm position-absolute bottom-0 end-0 m-1"
-                            onclick="triggerFile(${image.id})">✎</button>
+        document.querySelector(`#video-${videoId} video source`)
+            .setAttribute('src', videoURL);
 
-                        <input type="file" class="d-none"
-                            id="file-${image.id}"
-                            onchange="replaceImage(${image.id}, this)">
-                    </div>
-                </div>`;
-                });
+        document.querySelector(`#video-${videoId} video`).load();
+    }
 
-                new bootstrap.Modal(document.getElementById('modalEditPost')).show();
-            });
+    function deleteVideo(e, videoId) {
+        e.preventDefault();
+        tempDeletedVideos = tempDeletedVideos || [];
+        tempDeletedVideos.push(videoId);
+        document.getElementById(`video-${videoId}`)?.remove();
     }
 
     function initSliders() {
@@ -356,7 +404,8 @@
         });
     }
 
-    // Update post (apply all changes)
+
+
     function updatePost() {
         let postId = document.getElementById('edit_post_id').value;
         let caption = document.getElementById('edit_caption').value;
@@ -365,8 +414,13 @@
         formData.append('caption', caption);
 
         tempDeletedImages.forEach(id => formData.append('deleted_images[]', id));
+        tempDeletedVideos.forEach(id => formData.append('deleted_videos[]', id));
+
         for (let id in tempReplacedImages) {
             formData.append(`replaced_images[${id}]`, tempReplacedImages[id]);
+        }
+        for (const id in tempReplacedVideos) {
+            formData.append(`replaced_videos[${id}]`, tempReplacedVideos[id]);
         }
 
         fetch(`/posts/${postId}/update-modal`, {
@@ -379,88 +433,155 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
+                    // Update feed dynamically
                     const postCard = document.querySelector(`#post-${postId}`);
-
-                    // Update Caption
                     postCard.querySelector('.post-caption').innerText = caption;
+                    const mediaContainer = postCard.querySelector(`#post-media-${postId}`);
+
+                    if (!mediaContainer) return;
 
                     // Update Image Section
                     const cardBody = postCard.querySelector('.card-body');
                     // Select the container of the images (slider or single img)
                     let imageContainer = cardBody.querySelector('.insta-slider') ||
                         cardBody.querySelector('.img-fluid.rounded.w-100') ||
+                        cardBody.querySelector('video.w-100.rounded') ||
                         cardBody.querySelector('.text-muted');
 
                     let newHtml = '';
-                    if (data.images.length > 1) {
-                        newHtml = `
-                    <div class="insta-slider">
-                        <div class="insta-track">
-                            ${data.images.map(img => `
-                                <div class="insta-slide">
-                                    <img src="${img.url}" data-image-id="${img.id}" alt="Post Image">
-                                </div>
-                            `).join('')}
-                        </div>
-                        <button class="insta-btn prev">‹</button>
-                        <button class="insta-btn next">›</button>
-                    </div>`;
-                    } else if (data.images.length === 1) {
-                        newHtml =
-                            `<img class="img-fluid rounded w-100" src="${data.images[0].url}" data-image-id="${data.images[0].id}">`;
+
+                    const media = [
+                        ...(data.images || []).map(i => ({
+                            type: 'image',
+                            url: i.url
+                        })),
+                        ...(data.videos || []).map(v => ({
+                            type: 'video',
+                            url: v.url
+                        }))
+                    ];
+
+                    if (media.length > 1) {
+                        newHtml = `<div class="insta-slider">
+                            <div class="insta-track">
+                                ${media.map(item => `
+                                    <div class="insta-slide">
+                                        ${item.type === 'image'
+                                            ? `<img src="${item.url}" class="w-100 rounded">`
+                                            : `<video controls class="w-100 rounded"><source src="${item.url}"></video>`}
+                                    </div>`).join('')}
+                            </div>
+                            <button class="insta-btn prev">‹</button>
+                            <button class="insta-btn next">›</button>
+                        </div>`;
+                    } else if (media.length === 1) {
+                        const item = media[0];
+                        newHtml = item.type === 'image' ?
+                            `<img src="${item.url}" class="img-fluid rounded w-100">` :
+                            `<video controls class="w-100 rounded"><source src="${item.url}"></video>`;
                     } else {
-                        newHtml = `<div class="text-muted text-center py-4">No image available</div>`;
+                        newHtml = `<div class="text-muted text-center py-4">No media available</div>`;
                     }
 
-                    // Swap the old HTML for the new HTML
-                    imageContainer.outerHTML = newHtml;
+                    // Update media container
+                    mediaContainer.innerHTML = newHtml;
 
-                    // Re-initialize slider logic if multiple images exist
-                    if (data.images.length > 1) {
-                        // Remove 'initialized' flag so initSliders() picks up the new DOM
-                        const newSlider = cardBody.querySelector('.insta-slider');
-                        delete newSlider.dataset.initialized;
-                        initSliders();
+                    // Re-init slider
+                    if (media.length > 1) {
+                        const newSlider = mediaContainer.querySelector('.insta-slider');
+                        if (newSlider) {
+                            delete newSlider.dataset.initialized;
+                            initSliders();
+                        }
                     }
 
-                    // Close modal
+                    // Update modal preview instantly
+                    // updateModalPreview(data);
+
+                    // Then hide modal if you want (optional)
                     bootstrap.Modal.getInstance(document.getElementById('modalEditPost')).hide();
                 }
             })
             .catch(err => console.error('Update failed:', err));
     }
 
+    // function updateModalPreview(data) {
+    //     const preview = document.getElementById('editMediaPreview'); // your modal media container
+    //     if (!preview) return;
+
+    //     let html = '';
+
+    //     const media = [
+    //         ...(data.images || []).map(i => ({ type: 'image', ...i })),
+    //         ...(data.videos || []).map(v => ({ type: 'video', ...v }))
+    //     ];
+
+    //     if (media.length > 1) {
+    //         html = `
+    //         <div class="insta-slider">
+    //             <div class="insta-track">
+    //                 ${media.map(item => `
+    //                     <div class="insta-slide">
+    //                         ${item.type === 'image'
+    //                             ? `<img src="${item.url}" class="w-100 rounded">`
+    //                             : `<video controls class="w-100 rounded"><source src="${item.url}"></video>`}
+    //                     </div>
+    //                 `).join('')}
+    //             </div>
+    //             <button class="insta-btn prev">‹</button>
+    //             <button class="insta-btn next">›</button>
+    //         </div>`;
+    //     } else if (media.length === 1) {
+    //         const item = media[0];
+    //         html = item.type === 'image'
+    //             ? `<img class="img-fluid rounded w-100" src="${item.url}">`
+    //             : `<video controls class="w-100 rounded"><source src="${item.url}"></video>`;
+    //     } else {
+    //         html = `<div class="text-muted text-center py-4">No media available</div>`;
+    //     }
+
+    //     preview.innerHTML = html;
+
+    //     // Re-init slider inside modal if multiple media
+    //     if (media.length > 1) {
+    //         const newSlider = preview.querySelector('.insta-slider');
+    //         if (newSlider) {
+    //             delete newSlider.dataset.initialized;
+    //             initSliders();
+    //         }
+    //     }
+    // }
 </script>
 <script>
-// Use a more robust way to select the modal
-let commentsModal;
-document.addEventListener('DOMContentLoaded', () => {
-    const modalElem = document.getElementById('commentsModal');
-    if (modalElem) {
-        commentsModal = new bootstrap.Modal(modalElem);
+    // Use a more robust way to select the modal
+    let commentsModal;
+    document.addEventListener('DOMContentLoaded', () => {
+        const modalElem = document.getElementById('commentsModal');
+        if (modalElem) {
+            commentsModal = new bootstrap.Modal(modalElem);
+        }
+    });
+
+    function openCommentsModal(postId) {
+        document.getElementById('modal-post-id').value = postId;
+        loadModalComments(postId);
+        commentsModal.show();
     }
-});
 
-function openCommentsModal(postId) {
-    document.getElementById('modal-post-id').value = postId;
-    loadModalComments(postId);
-    commentsModal.show();
-}
+    function loadModalComments(postId) {
+        fetch(`/comments/${postId}`)
+            .then(res => {
+                if (!res.ok) throw new Error('Network response was not ok');
+                return res.json();
+            })
+            .then(data => {
+                let html = '';
+                data.forEach(c => {
+                    let avatar = c.user.image ?
+                        `/assets/images/users/${c.user.image}` :
+                        `/assets/images/avatar/07.jpg`;
 
-function loadModalComments(postId) {
-    fetch(`/comments/${postId}`)
-        .then(res => {
-            if (!res.ok) throw new Error('Network response was not ok');
-            return res.json();
-        })
-        .then(data => {
-            let html = '';
-            data.forEach(c => {
-                let avatar = c.user.image 
-                    ? `/assets/images/users/${c.user.image}` 
-                    : `/assets/images/avatar/07.jpg`;
-
-                html += `
+                    html += `
                 <li class="comment-item mb-3">
                     <div class="d-flex">
                         <div class="avatar avatar-xs me-2">
@@ -475,76 +596,137 @@ function loadModalComments(postId) {
                         </div>
                     </div>
                 </li>`;
-            });
-            document.getElementById('modal-comments').innerHTML = html || '<p class="text-center">No comments yet.</p>';
-        })
-        .catch(err => console.error('Fetch error:', err));
-}
-
-function submitModalComment(e) {
-    e.preventDefault();
-    
-    const form = e.target;
-    const input = form.querySelector('textarea');
-    const postId = form.closest('.modal-content') 
-                   ? document.getElementById('modal-post-id').value 
-                   : form.getAttribute('data-post-id'); // For feed-level comments
-
-    if (!input.value.trim()) return;
-
-    fetch('/comments', {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-            'Content-Type': 'application/json',
-            'Accept': 'application/json' // Forces Laravel to return JSON errors
-        },
-        body: JSON.stringify({ post_id: postId, comment: input.value })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.status === 'success') {
-            input.value = '';
-            // Refresh logic
-            if (form.closest('.modal')) {
-                loadModalComments(postId);
-            } else {
-                location.reload(); // Or implement a dynamic refresh for the feed list
-            }
-        } else {
-            alert(data.message || 'Error posting comment');
-        }
-    })
-    .catch(err => console.error('Submission error:', err));
-}
-
-function timeAgo(date) {
-    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-    const intervals = { year: 31536000, month: 2592000, day: 86400, hour: 3600, minute: 60 };
-    for (let key in intervals) {
-        const value = Math.floor(seconds / intervals[key]);
-        if (value >= 1) return value + ' ' + key + (value > 1 ? 's' : '') + ' ago';
+                });
+                document.getElementById('modal-comments').innerHTML = html ||
+                    '<p class="text-center">No comments yet.</p>';
+            })
+            .catch(err => console.error('Fetch error:', err));
     }
-    return 'just now';
-}
 
-// Toggle like (existing)
-function toggleLike(postId) {
-    fetch(`/like/${postId}`, {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
-    })
-    .then(res => res.json())
-    .then(data => {
-        document.getElementById(`like-count-${postId}`).innerText = data.count + ' like' + (data.count !== 1 ? 's' : '');
+    function submitModalComment(e) {
+        e.preventDefault();
+
+        const form = e.target;
+        const input = form.querySelector('textarea');
+        const postId = form.closest('.modal-content') ?
+            document.getElementById('modal-post-id').value :
+            form.getAttribute('data-post-id'); // For feed-level comments
+
+        if (!input.value.trim()) return;
+
+        fetch('/comments', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json' // Forces Laravel to return JSON errors
+                },
+                body: JSON.stringify({
+                    post_id: postId,
+                    comment: input.value
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    input.value = '';
+                    // Refresh logic
+                    if (form.closest('.modal')) {
+                        loadModalComments(postId);
+                    } else {
+                        location.reload(); // Or implement a dynamic refresh for the feed list
+                    }
+                } else {
+                    alert(data.message || 'Error posting comment');
+                }
+            })
+            .catch(err => console.error('Submission error:', err));
+    }
+
+    function timeAgo(date) {
+        const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+        const intervals = {
+            year: 31536000,
+            month: 2592000,
+            day: 86400,
+            hour: 3600,
+            minute: 60
+        };
+        for (let key in intervals) {
+            const value = Math.floor(seconds / intervals[key]);
+            if (value >= 1) return value + ' ' + key + (value > 1 ? 's' : '') + ' ago';
+        }
+        return 'just now';
+    }
+
+    // Toggle like (existing)
+    function toggleLike(postId) {
+        fetch(`/like/${postId}`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById(`like-count-${postId}`).innerText = data.count + ' like' + (data.count !==
+                    1 ? 's' : '');
+            });
+    }
+
+    Dropzone.autoDiscover = false;
+
+    const videoDropzone = new Dropzone("#videoDropzone", {
+        url: "{{ route('post.store') }}",
+        paramName: "videos[]",
+        uploadMultiple: true,
+        autoProcessQueue: false,
+        maxFiles: 2,
+        acceptedFiles: "video/*",
+        addRemoveLinks: true,
     });
-}
 
-// document.addEventListener('DOMContentLoaded', () => {
-//     @foreach($posts as $post)
-//         loadComments({{ $post->id }});
-//     @endforeach
-// });
+    document.getElementById('videoPostForm')
+        ?.addEventListener('submit', function(e) {
 
+            e.preventDefault();
+
+            let formData = new FormData();
+            formData.append('caption',
+                this.querySelector('[name="caption"]').value
+            );
+
+            videoDropzone.files.forEach(file => {
+                formData.append('videos[]', file);
+            });
+
+            fetch("{{ route('post.store') }}", {
+                    method: "POST",
+                    headers: {
+                        "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                    },
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+
+                    if (!data.success) return;
+
+                    document.getElementById('postsFeed')
+                        .insertAdjacentHTML('afterbegin', data.html);
+
+                    videoDropzone.removeAllFiles();
+                    this.reset();
+
+                    bootstrap.Modal
+                        .getInstance(document.getElementById('feedActionVideo'))
+                        .hide();
+                });
+        });
+
+    // document.addEventListener('DOMContentLoaded', () => {
+    //     @foreach ($posts as $post)
+    //         loadComments({{ $post->id }});
+    //     @endforeach
+    // });
 </script>
-

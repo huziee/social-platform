@@ -16,9 +16,24 @@ class Post extends Model
     {
         return $this->belongsTo(User::class);
     }
+    // public function images()
+    // {
+    //     return $this->hasMany(PostImage::class);
+    // }
+     public function media()
+    {
+        return $this->hasMany(PostMedia::class);
+    }
+
+    // OPTIONAL — convenience methods
     public function images()
     {
-        return $this->hasMany(PostImage::class);
+        return $this->media()->where('type', 'image');
+    }
+
+    public function videos()
+    {
+        return $this->media()->where('type', 'video');
     }
     public function comments()
 {

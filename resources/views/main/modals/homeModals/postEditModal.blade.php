@@ -1,5 +1,5 @@
 <!-- Modal Edit Post -->
-    <div class="modal fade" id="modalEditPost" tabindex="-1">
+<div class="modal fade" id="modalEditPost" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
 
@@ -17,11 +17,19 @@
                         <input type="text" id="edit_caption" class="form-control">
                     </div>
 
-                    <div class="mb-3">
+                    <!-- Image Section -->
+                    <div class="mb-3" id="editImageSection">
                         <label class="form-label">Images</label>
-
                         <div class="row g-3" id="editPostImage">
                             <!-- images injected here -->
+                        </div>
+                    </div>
+
+                    <!-- Video Section -->
+                    <div class="mb-3 d-none" id="editVideoSection">
+                        <label class="form-label">Videos</label>
+                        <div class="row g-3" id="editPostVideo">
+                            <!-- videos injected here -->
                         </div>
                     </div>
                 </form>

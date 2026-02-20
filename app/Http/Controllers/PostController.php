@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Post;
 use App\Models\User;
-use App\Models\PostImage;
+use App\Models\PostMedia;
 use function Pest\Laravel\json;
 use function Pest\Laravel\post;
 
@@ -21,10 +21,14 @@ class PostController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'caption' => 'nullable|string',
-            'images' => 'nullable|array',
-            'images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
-        ]);
+    'caption' => 'nullable|string',
+
+    'images' => 'nullable|array',
+    'images.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+
+    'videos' => 'nullable|array',
+    'videos.*' => 'mimes:mp4,mov,avi,webm|max:20480', // 20MB
+]);
 
         $post = Post::create([
             'user_id' => auth()->id(),
@@ -38,11 +42,30 @@ class PostController extends Controller
 
                 $image->move(public_path('assets/images/posts'), $filename);
 
-                $post->images()->create([
-                    'image' => 'assets/images/posts/' . $filename
+                PostMedia::create([
+                    'post_id' => $post->id,
+                    'type' => 'image',
+                    'file_path' => 'assets/images/posts/' . $filename
                 ]);
             }
         }
+
+        // SAVE VIDEOS
+if ($request->hasFile('videos')) {
+
+    foreach ($request->file('videos') as $video) {
+
+        $filename = time().'_'.uniqid().'.'.$video->getClientOriginalExtension();
+
+        $video->move(public_path('assets/videos/posts'), $filename);
+
+        PostMedia::create([
+            'post_id' => $post->id,
+            'type' => 'video',
+            'file_path' => 'assets/videos/posts/'.$filename
+        ]);
+    }
+}
 
         $post->load('images', 'user');
 
@@ -65,9 +88,9 @@ class PostController extends Controller
         // Handle deleted images
         if ($request->deleted_images) {
             foreach ($request->deleted_images as $imgId) {
-                $img = PostImage::find($imgId);
-                if ($img && file_exists(public_path($img->image)))
-                    unlink(public_path($img->image));
+                $img = PostMedia::where('type', 'image')->find($imgId);
+                if ($img && file_exists(public_path($img->file_path)))
+                    unlink(public_path($img->file_path));
                 $img?->delete();
             }
         }
@@ -75,52 +98,86 @@ class PostController extends Controller
         // Handle replaced images
         if ($request->replaced_images) {
             foreach ($request->replaced_images as $imgId => $file) {
-                $img = PostImage::find($imgId);
+                $img = PostMedia::where('type', 'image')->find($imgId);
                 if ($img) {
                     // Delete old image
-                    if ($img->image && file_exists(public_path($img->image)))
-                        unlink(public_path($img->image));
+                    if ($img->file_path && file_exists(public_path($img->file_path)))
+                        unlink(public_path($img->file_path));
 
                     // Save new image
                     $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                     $file->move(public_path('assets/images/posts'), $filename);
-                    $img->update(['image' => 'assets/images/posts/' . $filename]);
+                    $img->update(['file_path' => 'assets/images/posts/' . $filename]);
                 }
             }
         }
+        // Replace videos
+if ($request->replaced_videos) {
+
+    foreach ($request->replaced_videos as $videoId => $file) {
+
+        $video = PostMedia::where('type', 'video')->find($videoId);
+
+        if ($video) {
+
+            // Delete old file
+            if ($video->file_path && file_exists(public_path($video->file_path))) {
+                unlink(public_path($video->file_path));
+            }
+
+            // Save new video
+            $filename = time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
+
+            $file->move(public_path('assets/videos/posts'), $filename);
+
+            $video->update([
+                'file_path' => 'assets/videos/posts/'.$filename
+            ]);
+        }
+    }
+}
 
         // IMPORTANT: Refresh the relationship to exclude deleted images 
         // and include updated file paths.
         $post->refresh();
 
-        $images = $post->images->map(function ($img) {
-            return [
-                'id' => $img->id,
-                'url' => asset($img->image)
-            ];
-        });
+    $images = $post->media->where('type', 'image')->map(function ($img) {
+        return [
+            'id' => $img->id,
+            'url' => asset($img->file_path)
+        ];
+    })->values(); // Use values() to reset keys for JSON array
 
-        return response()->json([
-            'success' => true,
-            'images' => $images,
-            'caption' => $post->caption // Also return caption just in case
-        ]);
+    $videos = $post->media->where('type', 'video')->map(function ($vid) {
+        return [
+            'id' => $vid->id,
+            'url' => asset($vid->file_path)
+        ];
+    })->values();
+
+    return response()->json([
+        'success' => true,
+        'images' => $images,
+        'videos' => $videos, // Send videos back!
+        'caption' => $post->caption
+    ]);
     }
 
 
 
 
     public function edit($postId)
-    {
-        $post = Post::with('images')->findOrFail($postId);
-        if (auth()->id() !== $post->user_id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
+{
+    $post = Post::with(['images', 'videos'])->findOrFail($postId); // ✅ include videos
 
-        return response()->json([
-            'post' => $post
-        ]);
+    if (auth()->id() !== $post->user_id) {
+        return response()->json(['message' => 'Unauthorized'], 403);
     }
+
+    return response()->json([
+        'post' => $post
+    ]);
+}
 
     public function update(Request $request, $id)
     {
@@ -155,8 +212,8 @@ class PostController extends Controller
 
         // 1. Delete physical image files from the server
         foreach ($post->images as $img) {
-            if ($img->image && file_exists(public_path($img->image))) {
-                unlink(public_path($img->image));
+            if ($img->file_path && file_exists(public_path($img->file_path))) {
+                unlink(public_path($img->file_path));
             }
         }
 
@@ -174,10 +231,10 @@ class PostController extends Controller
 
     public function deleteImage($id)
     {
-        $image = PostImage::findOrFail($id);
+        $image = PostMedia::where('type','image')->findOrFail($id);
 
-        if ($image->image && file_exists(public_path($image->image))) {
-            unlink(public_path($image->image));
+        if ($image->file_path && file_exists(public_path($image->file_path))) {
+            unlink(public_path($image->file_path));
         }
 
         $image->delete();
@@ -193,11 +250,12 @@ class PostController extends Controller
             'image' => 'required|image|max:2048'
         ]);
 
-        $image = PostImage::findOrFail($id);
+        $image = PostMedia::where('type','image')->findOrFail($id);
+
 
         /* DELETE OLD IMAGE */
-        if ($image->image && file_exists(public_path($image->image))) {
-            unlink(public_path($image->image));
+        if ($image->file_path && file_exists(public_path($image->file_path))) {
+            unlink(public_path($image->file_path));
         }
 
         /* SAVE NEW IMAGE */
@@ -212,8 +270,8 @@ class PostController extends Controller
 
         /* UPDATE DB PATH */
         $image->update([
-            'image' => 'assets/images/posts/' . $filename
-        ]);
+    'file_path' => 'assets/images/posts/' . $filename
+]);
 
         return response()->json([
             'url' => asset('assets/images/posts/' . $filename)
