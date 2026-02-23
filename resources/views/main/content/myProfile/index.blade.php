@@ -2,7 +2,65 @@
 
 @section('title', 'My Profile')
 
+@section('style')
+    @include('main.content.home.css.index')
+
+    <style>
+        .profile-post-thumb {
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .profile-post-thumb img,
+        .profile-post-thumb video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .profile-post-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            color: #fff;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+        }
+
+        .profile-post-thumb:hover .profile-post-overlay {
+            opacity: 1;
+        }
+
+        /* Standardize media size inside profile post modal */
+        #postModal .modal-dialog {
+            max-width: 720px;
+        }
+
+        #postModal .card {
+            max-width: 680px;
+            margin: 0 auto;
+        }
+
+        /* Any media inside the loaded post card in the modal */
+        #postModal [id^="post-media-"] img,
+        #postModal [id^="post-media-"] video,
+        #postModal .insta-slider img,
+        #postModal .insta-slider video {
+            width: 100%;
+            max-height: 60vh;
+            object-fit: contain;
+        }
+    </style>
+@endsection
+
 @section('main')
+
 
     <div class="row g-4">
 
@@ -27,58 +85,36 @@
                         </div>
                         <div class="ms-sm-4 mt-sm-3">
                             <!-- Info -->
-                            <h1 class="mb-0 h5">Sam Lanson <i class="bi bi-patch-check-fill text-success small"></i></h1>
-                            <p>250 connections</p>
+                            <h1 class="mb-0 h5">{{ Auth::user()->first_name }}  {{ Auth::user()->last_name }} <i class="bi bi-patch-check-fill text-success small"></i></h1>
+                            <p>{{ Auth::user()->username }}</p>
                         </div>
                         <!-- Button -->
                         <div class="d-flex mt-3 justify-content-center ms-sm-auto">
-                            <button class="btn btn-danger-soft me-2" type="button"> <i class="bi bi-pencil-fill pe-1"></i>
-                                Edit profile </button>
-                            <div class="dropdown">
-                                <!-- Card share action menu -->
-                                <button class="icon-md btn btn-light" type="button" id="profileAction2"
-                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-three-dots"></i>
-                                </button>
-                                <!-- Card share action dropdown menu -->
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileAction2">
-                                    <li><a class="dropdown-item" href="#"> <i
-                                                class="bi bi-bookmark fa-fw pe-2"></i>Share profile in a message</a></li>
-                                    <li><a class="dropdown-item" href="#"> <i
-                                                class="bi bi-file-earmark-pdf fa-fw pe-2"></i>Save your profile to PDF</a>
-                                    </li>
-                                    <li><a class="dropdown-item" href="#"> <i class="bi bi-lock fa-fw pe-2"></i>Lock
-                                            profile</a></li>
-                                    <li>
-                                        <hr class="dropdown-divider">
-                                    </li>
-                                    <li><a class="dropdown-item" href="#"> <i
-                                                class="bi bi-gear fa-fw pe-2"></i>Profile settings</a></li>
-                                </ul>
-                            </div>
+                            <button class="btn btn-sm btn-danger-soft me-2" type="button"> <i
+                                                class="bi bi-file-earmark-pdf"></i></button>
+                            <button class="btn btn-sm btn-primary-soft me-2" type="button"> <i
+                                                class="bi bi-bookmark fa-fw"></i></button>
+                            <button class="btn btn-sm btn-success-soft me-2" type="button"> <i
+                                                class="bi bi-lock fa-fw"></i></button>
                         </div>
                     </div>
                     <!-- List profile -->
                     <ul class="list-inline mb-0 text-center text-sm-start mt-3 mt-sm-0">
-                        <li class="list-inline-item"><i class="bi bi-briefcase me-1"></i> Lead Developer</li>
-                        <li class="list-inline-item"><i class="bi bi-geo-alt me-1"></i> New Hampshire</li>
-                        <li class="list-inline-item"><i class="bi bi-calendar2-plus me-1"></i> Joined on Nov 26, 2019</li>
-                    </ul>
+                        <li class="list-inline-item"><i class="bi bi-briefcase me-1"></i>{{ Auth::user()->description }}</li>
                 </div>
                 <!-- Card body END -->
-
-                <div class="card-footer mt-3 pt-2 pb-0">
+                <div class="card-footer mt-2 pt-2 pb-0">
                     <ul class="nav nav-bottom-line justify-content-center justify-content-md-start border-0">
                         <li class="nav-item">
                             <a class="nav-link active" href="#about">About</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#posts">Posts</a>
+                            <a class="nav-link" href="#posts">Posts ({{ Auth::user()->posts()->count() }})</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#connections">Connections</a>
+                            <a class="nav-link" href="#connections">Followers ({{ Auth::user()->followers()->count() }})</a>
                         </li>
-                        
+
                     </ul>
                 </div>
 
@@ -375,6 +411,15 @@
 
     </div>
 
+    <!-- Single post view modal -->
+    <div class="modal fade" id="postModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-body p-0" id="postModalBody"></div>
+            </div>
+        </div>
+    </div>
+
     {{-- <!-- Modal create Feed START -->
 <div class="modal fade" id="modalCreateFeed" tabindex="-1" aria-labelledby="modalLabelCreateFeed" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
@@ -648,37 +693,397 @@
 @endsection
 @section('script')
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
 
-    const sections = document.querySelectorAll('.profile-section');
-    const tabs = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.profile-section');
+            const tabs = document.querySelectorAll('.nav-link');
 
-    function activateSection(hash) {
+            function activateSection(hash) {
 
-        if (!hash || !document.querySelector(hash)) {
-            hash = '#posts';
+                if (!hash || !document.querySelector(hash)) {
+                    hash = '#posts';
+                }
+
+                // hard reset
+                sections.forEach(s => s.classList.add('d-none'));
+                tabs.forEach(t => t.classList.remove('active'));
+
+                // activate section
+                document.querySelector(hash).classList.remove('d-none');
+
+                // activate tab
+                const activeTab = document.querySelector(`a[href="${hash}"]`);
+                if (activeTab) activeTab.classList.add('active');
+            }
+
+            activateSection(location.hash);
+
+            window.addEventListener('hashchange', () => {
+                activateSection(location.hash);
+            });
+
+            // About section inline edit
+            const aboutForm = document.getElementById('aboutForm');
+            const editBtn = document.getElementById('aboutEditBtn');
+            const descText = document.getElementById('aboutDescriptionText');
+            const descInput = document.getElementById('aboutDescriptionInput');
+            const dobText = document.getElementById('aboutDobText');
+            const dobInput = document.getElementById('aboutDobInput');
+            const phoneText = document.getElementById('aboutPhoneText');
+            const phoneInput = document.getElementById('aboutPhoneInput');
+            const firstNameText = document.getElementById('aboutFirstNameText');
+            const lastNameText = document.getElementById('aboutLastNameText');
+            const firstNameInput = document.getElementById('aboutFirstNameInput');
+            const lastNameInput = document.getElementById('aboutLastNameInput');
+            const roleText = document.getElementById('aboutRoleText');
+            const roleInput = document.getElementById('aboutRoleInput');
+            const statusText = document.getElementById('aboutStatusText');
+            const statusInput = document.getElementById('aboutStatusInput');
+            const addressText = document.getElementById('aboutAddressText');
+            const addressInput = document.getElementById('aboutAddressInput');
+            const emailText = document.getElementById('aboutEmailText');
+            const emailInput = document.getElementById('aboutEmailInput');
+            const actions = document.getElementById('aboutActions');
+            const cancelBtn = document.getElementById('aboutCancelBtn');
+
+            function enterEditMode() {
+                if (!aboutForm) return;
+                descText?.classList.add('d-none');
+                descInput?.classList.remove('d-none');
+
+                dobText?.classList.add('d-none');
+                dobInput?.classList.remove('d-none');
+
+                phoneText?.classList.add('d-none');
+                phoneInput?.classList.remove('d-none');
+                firstNameInput?.classList.remove('d-none');
+                lastNameInput?.classList.remove('d-none');
+                roleText?.classList.add('d-none');
+                roleInput?.classList.remove('d-none');
+
+                statusText?.classList.add('d-none');
+                statusInput?.classList.remove('d-none');
+
+                addressText?.classList.add('d-none');
+                addressInput?.classList.remove('d-none');
+
+                emailText?.classList.add('d-none');
+                emailInput?.classList.remove('d-none');
+
+                actions?.classList.remove('d-none');
+                editBtn?.classList.add('d-none');
+            }
+
+            function exitEditMode() {
+                if (!aboutForm) return;
+                descText?.classList.remove('d-none');
+                descInput?.classList.add('d-none');
+
+                dobText?.classList.remove('d-none');
+                dobInput?.classList.add('d-none');
+
+                phoneText?.classList.remove('d-none');
+                phoneInput?.classList.add('d-none');
+                firstNameInput?.classList.add('d-none');
+                lastNameInput?.classList.add('d-none');
+
+                roleText?.classList.remove('d-none');
+                roleInput?.classList.add('d-none');
+
+                statusText?.classList.remove('d-none');
+                statusInput?.classList.add('d-none');
+
+                addressText?.classList.remove('d-none');
+                addressInput?.classList.add('d-none');
+
+                emailText?.classList.remove('d-none');
+                emailInput?.classList.add('d-none');
+
+                actions?.classList.add('d-none');
+                editBtn?.classList.remove('d-none');
+            }
+
+            editBtn?.addEventListener('click', enterEditMode);
+            cancelBtn?.addEventListener('click', (e) => {
+                e.preventDefault();
+                exitEditMode();
+            });
+
+            aboutForm?.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const payload = {
+                    description: descInput?.value || '',
+                    date_of_birth: dobInput?.value || null,
+                    phone_number: phoneInput?.value || '',
+                    first_name: firstNameInput?.value || '',
+                    last_name: lastNameInput?.value || '',
+                    email: emailInput?.value || '',
+                    role: roleInput?.value || '',
+                    status: statusInput?.value || '',
+                    address: addressInput?.value || '',
+                };
+
+                fetch('{{ route('profile.about.update') }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                .getAttribute('content'),
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify(payload),
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.status !== 'success') {
+                            alert('Could not update profile info.');
+                            return;
+                        }
+
+                        if (descText) {
+                            descText.textContent = payload.description ||
+                                'No bio added yet. Tell people a bit about yourself.';
+                        }
+
+                        if (dobText) {
+                            dobText.textContent = payload.date_of_birth || 'Not specified';
+                        }
+
+                        if (phoneText) {
+                            phoneText.textContent = payload.phone_number || 'Not provided';
+                        }
+
+                        if (firstNameText) {
+                            firstNameText.textContent = payload.first_name || '';
+                        }
+
+                        if (lastNameText) {
+                            lastNameText.textContent = payload.last_name || '';
+                        }
+
+                        if (emailText) {
+                            emailText.textContent = payload.email || '';
+                        }
+                        if (roleText) {
+                            roleText.textContent = payload.role || 'Not specified';
+                        }
+
+                        if (statusText) {
+                            statusText.textContent = payload.status ?
+                                payload.status.charAt(0).toUpperCase() + payload.status.slice(1) :
+                                'Not specified';
+                        }
+
+                        if (addressText) {
+                            addressText.textContent = payload.address || 'Not specified';
+                        }
+
+                        exitEditMode();
+                    })
+                    .catch(() => {
+                        alert('Server error while updating profile info.');
+                    });
+            });
+        });
+
+        let postModal;
+        let commentsModal;
+
+        function openPostModal(postId) {
+            const modalEl = document.getElementById('postModal');
+            if (!postModal && modalEl) {
+                postModal = new bootstrap.Modal(modalEl);
+            }
+
+            fetch(`/posts/${postId}/preview`)
+                .then(res => res.json())
+                .then(data => {
+                    const body = document.getElementById('postModalBody');
+                    if (!body || !data.html) return;
+
+                    body.innerHTML = data.html;
+
+                    // Initialize media sliders inside the loaded post
+                    if (typeof initSliders === 'function') {
+                        initSliders();
+                    }
+
+                    const commentsEl = document.getElementById('commentsModal');
+                    if (commentsEl) {
+                        commentsModal = new bootstrap.Modal(commentsEl);
+                    }
+
+                    postModal && postModal.show();
+                })
+                .catch(err => console.error('Post preview failed:', err));
         }
 
-        // hard reset
-        sections.forEach(s => s.classList.add('d-none'));
-        tabs.forEach(t => t.classList.remove('active'));
+        function openCommentsModal(postId) {
+            if (!commentsModal) {
+                const modalElem = document.getElementById('commentsModal');
+                if (modalElem) {
+                    commentsModal = new bootstrap.Modal(modalElem);
+                }
+            }
 
-        // activate section
-        document.querySelector(hash).classList.remove('d-none');
+            if (!commentsModal) return;
 
-        // activate tab
-        const activeTab = document.querySelector(`a[href="${hash}"]`);
-        if (activeTab) activeTab.classList.add('active');
-    }
+            document.getElementById('modal-post-id').value = postId;
+            loadModalComments(postId);
+            commentsModal.show();
+        }
 
-    activateSection(location.hash);
+        function loadModalComments(postId) {
+            fetch(`/comments/${postId}`)
+                .then(res => {
+                    if (!res.ok) throw new Error('Network response was not ok');
+                    return res.json();
+                })
+                .then(data => {
+                    let html = '';
+                    data.forEach(c => {
+                        let avatar = c.user.image ?
+                            `/assets/images/users/${c.user.image}` :
+                            `/assets/images/avatar/07.jpg`;
 
-    window.addEventListener('hashchange', () => {
-        activateSection(location.hash);
-    });
-});
-</script>
+                        html += `
+                <li class="comment-item mb-3">
+                    <div class="d-flex">
+                        <div class="avatar avatar-xs me-2">
+                            <img class="avatar-img rounded-circle" src="${avatar}">
+                        </div>
+                        <div class="bg-light p-3 rounded w-100">
+                            <div class="d-flex justify-content-between">
+                                <h6 class="mb-1">${c.user.username}</h6>
+                                <small>${timeAgo(c.created_at)}</small>
+                            </div>
+                            <p class="small mb-0">${c.comment}</p>
+                        </div>
+                    </div>
+                </li>`;
+                    });
+                    const target = document.getElementById('modal-comments');
+                    if (target) {
+                        target.innerHTML = html || '<p class="text-center">No comments yet.</p>';
+                    }
+                })
+                .catch(err => console.error('Fetch error:', err));
+        }
+
+        function submitModalComment(e) {
+            e.preventDefault();
+
+            const form = e.target;
+            const input = form.querySelector('textarea');
+            const postId = form.closest('.modal-content') ?
+                document.getElementById('modal-post-id').value :
+                form.getAttribute('data-post-id');
+
+            if (!input.value.trim()) return;
+
+            fetch('/comments', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        post_id: postId,
+                        comment: input.value
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        input.value = '';
+                        if (form.closest('.modal')) {
+                            loadModalComments(postId);
+                        } else {
+                            location.reload();
+                        }
+                    } else {
+                        alert(data.message || 'Error posting comment');
+                    }
+                })
+                .catch(err => console.error('Submission error:', err));
+        }
+
+        function timeAgo(date) {
+            const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+            const intervals = {
+                year: 31536000,
+                month: 2592000,
+                day: 86400,
+                hour: 3600,
+                minute: 60
+            };
+            for (let key in intervals) {
+                const value = Math.floor(seconds / intervals[key]);
+                if (value >= 1) return value + ' ' + key + (value > 1 ? 's' : '') + ' ago';
+            }
+            return 'just now';
+        }
+
+        function initSliders() {
+            document.querySelectorAll('.insta-slider').forEach(slider => {
+                // Skip if already initialized
+                if (slider.dataset.initialized) return;
+                slider.dataset.initialized = true;
+
+                const track = slider.querySelector('.insta-track');
+                const slides = slider.querySelectorAll('.insta-slide');
+                const prev = slider.querySelector('.prev');
+                const next = slider.querySelector('.next');
+                let index = 0;
+
+                function update() {
+                    if (!track) return;
+                    track.style.transform = `translateX(-${index * 100}%)`;
+                }
+
+                next?.addEventListener('click', () => {
+                    if (slides.length === 0) return;
+                    index = (index + 1) % slides.length;
+                    update();
+                });
+
+                prev?.addEventListener('click', () => {
+                    if (slides.length === 0) return;
+                    index = (index - 1 + slides.length) % slides.length;
+                    update();
+                });
+
+                // Touch support
+                let startX = 0;
+                slider.addEventListener('touchstart', e => startX = e.touches[0].clientX);
+                slider.addEventListener('touchend', e => {
+                    const endX = e.changedTouches[0].clientX;
+                    if (startX - endX > 50) next?.click();
+                    if (endX - startX > 50) prev?.click();
+                });
+            });
+        }
+
+        function toggleLike(postId) {
+            fetch(`/like/${postId}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    const el = document.getElementById(`like-count-${postId}`);
+                    if (el) {
+                        el.innerText = data.count + ' like' + (data.count !== 1 ? 's' : '');
+                    }
+                })
+                .catch(err => console.error('Like toggle failed:', err));
+        }
+    </script>
 
 
 @endsection

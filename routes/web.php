@@ -30,6 +30,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/post-image/{id}', [PostController::class, 'updateImage'])->name('post.updateImage');
     Route::post('/posts/{id}/update-modal', [PostController::class, 'updateModal'])->name('posts.updateModal');
 
+    Route::get('/posts/{id}/preview', [PostController::class, 'preview'])->name('posts.preview');
 
 Route::post('/like/{post}', [LikeController::class, 'togglestatus']);
     Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
@@ -49,6 +50,8 @@ Route::post('/like/{post}', [LikeController::class, 'togglestatus']);
     Route::post('/stories/upload',[StoryController::class, 'store'])->name('stories.store');
     Route::delete('/delete-stories/{id}', [StoryController::class, 'destroy'])
     ->name('stories.destroy');
+
+    Route::post('/my-profile/about', [ProfileController::class, 'updateAbout'])->name('profile.about.update');
 
 
 

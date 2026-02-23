@@ -229,6 +229,15 @@ if ($request->replaced_videos) {
         ]);
     }
 
+    public function preview($id)
+    {
+        $post = Post::with(['media', 'user', 'likes', 'comments.user'])->findOrFail($id);
+
+        return response()->json([
+            'html' => view('main.post_card.index', ['post' => $post])->render(),
+        ]);
+    }
+
     public function deleteImage($id)
     {
         $image = PostMedia::where('type','image')->findOrFail($id);

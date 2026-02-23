@@ -495,62 +495,12 @@
                         }
                     }
 
-                    // Update modal preview instantly
-                    // updateModalPreview(data);
-
                     // Then hide modal if you want (optional)
                     bootstrap.Modal.getInstance(document.getElementById('modalEditPost')).hide();
                 }
             })
             .catch(err => console.error('Update failed:', err));
     }
-
-    // function updateModalPreview(data) {
-    //     const preview = document.getElementById('editMediaPreview'); // your modal media container
-    //     if (!preview) return;
-
-    //     let html = '';
-
-    //     const media = [
-    //         ...(data.images || []).map(i => ({ type: 'image', ...i })),
-    //         ...(data.videos || []).map(v => ({ type: 'video', ...v }))
-    //     ];
-
-    //     if (media.length > 1) {
-    //         html = `
-    //         <div class="insta-slider">
-    //             <div class="insta-track">
-    //                 ${media.map(item => `
-    //                     <div class="insta-slide">
-    //                         ${item.type === 'image'
-    //                             ? `<img src="${item.url}" class="w-100 rounded">`
-    //                             : `<video controls class="w-100 rounded"><source src="${item.url}"></video>`}
-    //                     </div>
-    //                 `).join('')}
-    //             </div>
-    //             <button class="insta-btn prev">‹</button>
-    //             <button class="insta-btn next">›</button>
-    //         </div>`;
-    //     } else if (media.length === 1) {
-    //         const item = media[0];
-    //         html = item.type === 'image'
-    //             ? `<img class="img-fluid rounded w-100" src="${item.url}">`
-    //             : `<video controls class="w-100 rounded"><source src="${item.url}"></video>`;
-    //     } else {
-    //         html = `<div class="text-muted text-center py-4">No media available</div>`;
-    //     }
-
-    //     preview.innerHTML = html;
-
-    //     // Re-init slider inside modal if multiple media
-    //     if (media.length > 1) {
-    //         const newSlider = preview.querySelector('.insta-slider');
-    //         if (newSlider) {
-    //             delete newSlider.dataset.initialized;
-    //             initSliders();
-    //         }
-    //     }
-    // }
 </script>
 <script>
     // Use a more robust way to select the modal
@@ -723,10 +673,4 @@
                         .hide();
                 });
         });
-
-    // document.addEventListener('DOMContentLoaded', () => {
-    //     @foreach ($posts as $post)
-    //         loadComments({{ $post->id }});
-    //     @endforeach
-    // });
 </script>

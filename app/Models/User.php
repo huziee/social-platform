@@ -27,6 +27,9 @@ class User extends Authenticatable
         'description',
         'password',
         'image',
+        'role',
+        'status',
+        'address',
     ];
 
     public function following()

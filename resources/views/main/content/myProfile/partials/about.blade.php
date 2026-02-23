@@ -1,169 +1,191 @@
+@php
+    $user = Auth::user();
+@endphp
+
 <div class="card">
-            <!-- Card header START -->
-            <div class="card-header border-0 pb-0">
-              <h5 class="card-title"> Profile Info</h5> 
+    <!-- Card header START -->
+    <div class="card-header border-0 pb-0 d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Profile Info</h5>
+        <button type="button" id="aboutEditBtn" class="btn btn-sm btn-primary">
+            Edit
+        </button>
+    </div>
+    <!-- Card header END -->
+    <!-- Card body START -->
+    <div class="card-body">
+        <form id="aboutForm">
+            <div class="rounded border px-3 py-2 mb-3">
+                <h6 class="mb-2">Overview</h6>
+                <p class="mb-0" id="aboutDescriptionText">
+                    {{ $user->description ?: 'No bio added yet. Tell people a bit about yourself.' }}
+                </p>
+                <textarea class="form-control d-none mt-2" id="aboutDescriptionInput" name="description"
+                    rows="3"
+                    placeholder="Tell people a bit about yourself...">{{ $user->description }}</textarea>
             </div>
-            <!-- Card header END -->
-            <!-- Card body START -->
-            <div class="card-body">
-              <div class="rounded border px-3 py-2 mb-3"> 
-                <div class="d-flex align-items-center justify-content-between">
-                  <h6>Overview</h6>
-                  <div class="dropdown ms-auto">
-                    <!-- Card share action menu -->
-                    <a class="nav nav-link text-secondary mb-0" href="#" id="aboutAction" data-bs-toggle="dropdown" aria-expanded="false">
-                      <i class="bi bi-three-dots"></i>
-                    </a>
-                    <!-- Card share action dropdown menu -->
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="aboutAction">
-                      <li><a class="dropdown-item" href="#"> <i class="bi bi-pencil-square fa-fw pe-2"></i>Edit</a></li>
-                      <li><a class="dropdown-item" href="#"> <i class="bi bi-trash fa-fw pe-2"></i>Delete</a></li>
-                    </ul>
-                  </div>
-                </div>
-                <p>He moonlights difficult engrossed it, sportsmen. Interested has all Devonshire difficulty gay assistance joy. Handsome met debating sir dwelling age material. As style lived he worse dried. Offered related so visitors we private removed. Moderate do subjects to distance. </p>
-              </div>
-              <div class="row g-4">
-                <div class="col-sm-6">
-                  <!-- Birthday START -->
-                  <div class="d-flex align-items-center rounded border px-3 py-2"> 
-                    <!-- Date -->
-                    <p class="mb-0">
-                      <i class="bi bi-calendar-date fa-fw me-2"></i> Born: <strong> October 20, 1990 </strong>
-                    </p>
-                    <div class="dropdown ms-auto">
-                      <!-- Card share action menu -->
-                      <a class="nav nav-link text-secondary mb-0" href="#" id="aboutAction2" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-three-dots"></i>
-                      </a>
-                      <!-- Card share action dropdown menu -->
-                      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="aboutAction2">
-                        <li><a class="dropdown-item" href="#"> <i class="bi bi-pencil-square fa-fw pe-2"></i>Edit</a></li>
-                        <li><a class="dropdown-item" href="#"> <i class="bi bi-trash fa-fw pe-2"></i>Delete</a></li>
-                      </ul>
+
+        <div class="row g-4">
+            <div class="col-sm-6">
+                <!-- Birthday START -->
+                <div class="d-flex align-items-center rounded border px-3 py-2">
+                    <div class="w-100">
+                        <p class="mb-1">
+                            <i class="bi bi-calendar-date fa-fw me-2"></i>
+                            Born:
+                            <strong id="aboutDobText">
+                                {{ $user->date_of_birth ? \Carbon\Carbon::parse($user->date_of_birth)->format('F d, Y') : 'Not specified' }}
+                            </strong>
+                        </p>
+                        <input type="date" class="form-control d-none" id="aboutDobInput" name="date_of_birth"
+                            value="{{ $user->date_of_birth }}">
                     </div>
-                  </div>
-                  <!-- Birthday END -->
                 </div>
-                <div class="col-sm-6">
-                  <!-- Status START -->
-                  <div class="d-flex align-items-center rounded border px-3 py-2"> 
-                    <!-- Date -->
-                    <p class="mb-0">
-                      <i class="bi bi-heart fa-fw me-2"></i> Status: <strong> Single </strong>
-                    </p>
-                    <div class="dropdown ms-auto">
-                      <!-- Card share action menu -->
-                      <a class="nav nav-link text-secondary mb-0" href="#" id="aboutAction3" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-three-dots"></i>
-                      </a>
-                      <!-- Card share action dropdown menu -->
-                      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="aboutAction3">
-                        <li><a class="dropdown-item" href="#"> <i class="bi bi-pencil-square fa-fw pe-2"></i>Edit</a></li>
-                        <li><a class="dropdown-item" href="#"> <i class="bi bi-trash fa-fw pe-2"></i>Delete</a></li>
-                      </ul>
-                    </div>
-                  </div>
-                  <!-- Status END -->
-                </div>
-                <div class="col-sm-6">
-                  <!-- Designation START -->
-                  <div class="d-flex align-items-center rounded border px-3 py-2"> 
-                    <!-- Date -->
-                    <p class="mb-0">
-                      <i class="bi bi-briefcase fa-fw me-2"></i> <strong> Lead Developer </strong>
-                    </p>
-                    <div class="dropdown ms-auto">
-                      <!-- Card share action menu -->
-                      <a class="nav nav-link text-secondary mb-0" href="#" id="aboutAction4" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-three-dots"></i>
-                      </a>
-                      <!-- Card share action dropdown menu -->
-                      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="aboutAction4">
-                        <li><a class="dropdown-item" href="#"> <i class="bi bi-pencil-square fa-fw pe-2"></i>Edit</a></li>
-                        <li><a class="dropdown-item" href="#"> <i class="bi bi-trash fa-fw pe-2"></i>Delete</a></li>
-                      </ul>
-                    </div>
-                  </div>
-                  <!-- Designation END -->
-                </div>
-                <div class="col-sm-6">
-                  <!-- Lives START -->
-                  <div class="d-flex align-items-center rounded border px-3 py-2"> 
-                    <!-- Date -->
-                    <p class="mb-0">
-                      <i class="bi bi-geo-alt fa-fw me-2"></i> Lives in: <strong> New Hampshire </strong>
-                    </p>
-                    <div class="dropdown ms-auto">
-                      <!-- Card share action menu -->
-                      <a class="nav nav-link text-secondary mb-0" href="#" id="aboutAction5" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-three-dots"></i>
-                      </a>
-                      <!-- Card share action dropdown menu -->
-                      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="aboutAction5">
-                        <li><a class="dropdown-item" href="#"> <i class="bi bi-pencil-square fa-fw pe-2"></i>Edit</a></li>
-                        <li><a class="dropdown-item" href="#"> <i class="bi bi-trash fa-fw pe-2"></i>Delete</a></li>
-                      </ul>
-                    </div>
-                  </div>
-                  <!-- Lives END -->
-                </div>
-                <div class="col-sm-6">
-                  <!-- Joined on START -->
-                  <div class="d-flex align-items-center rounded border px-3 py-2"> 
-                    <!-- Date -->
-                    <p class="mb-0">
-                      <i class="bi bi-geo-alt fa-fw me-2"></i> Joined on: <strong> Nov 26, 2019 </strong>
-                    </p>
-                    <div class="dropdown ms-auto">
-                      <!-- Card share action menu -->
-                      <a class="nav nav-link text-secondary mb-0" href="#" id="aboutAction6" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-three-dots"></i>
-                      </a>
-                      <!-- Card share action dropdown menu -->
-                      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="aboutAction6">
-                        <li><a class="dropdown-item" href="#"> <i class="bi bi-pencil-square fa-fw pe-2"></i>Edit</a></li>
-                        <li><a class="dropdown-item" href="#"> <i class="bi bi-trash fa-fw pe-2"></i>Delete</a></li>
-                      </ul>
-                    </div>
-                  </div>
-                  <!-- Joined on END -->
-                </div>
-                <div class="col-sm-6">
-                  <!-- Joined on START -->
-                  <div class="d-flex align-items-center rounded border px-3 py-2"> 
-                    <!-- Date -->
-                    <p class="mb-0">
-                      <i class="bi bi-envelope fa-fw me-2"></i> Email: <strong> example@abc.com </strong>
-                    </p>
-                    <div class="dropdown ms-auto">
-                      <!-- Card share action menu -->
-                      <a class="nav nav-link text-secondary mb-0" href="#" id="aboutAction7" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-three-dots"></i>
-                      </a>
-                      <!-- Card share action dropdown menu -->
-                      <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="aboutAction7">
-                        <li><a class="dropdown-item" href="#"> <i class="bi bi-pencil-square fa-fw pe-2"></i>Edit</a></li>
-                        <li><a class="dropdown-item" href="#"> <i class="bi bi-trash fa-fw pe-2"></i>Delete</a></li>
-                      </ul>
-                    </div>
-                  </div>
-                  <!-- Joined on END -->
-                </div>
-                <div class="col-sm-6 position-relative">
-                  <!-- Workplace on START -->
-                  <a class="btn btn-dashed rounded w-100" href="#!"> <i class="bi bi-plus-circle-dotted me-1"></i>Add a workplace</a>
-                  <!-- Workplace on END -->
-                </div>
-                <div class="col-sm-6 position-relative">
-                  <!-- Education on START -->
-                  <a class="btn btn-dashed rounded w-100" href="#!"> <i class="bi bi-plus-circle-dotted me-1"></i>Add a education</a>
-                  <!-- Education on END -->
-                </div>
-              </div>
+                <!-- Birthday END -->
             </div>
-            <!-- Card body END -->
-          </div>
+
+            <div class="col-sm-6">
+                <!-- Phone START -->
+                <div class="d-flex align-items-center rounded border px-3 py-2">
+                    <div class="w-100">
+                        <p class="mb-1">
+                            <i class="bi bi-telephone fa-fw me-2"></i>
+                            Phone:
+                            <strong id="aboutPhoneText">{{ $user->phone_number ?: 'Not provided' }}</strong>
+                        </p>
+                        <input type="text" class="form-control d-none" id="aboutPhoneInput" name="phone_number"
+                            value="{{ $user->phone_number }}">
+                    </div>
+                </div>
+                <!-- Phone END -->
+            </div>
+
+            <div class="col-sm-6">
+                <!-- First name START -->
+                <div class="d-flex align-items-center rounded border px-3 py-2">
+                    <div class="w-100">
+                        <p class="mb-1">
+                            <i class="bi bi-person fa-fw me-2"></i>
+                            First name:
+                            <strong id="aboutFirstNameText">{{ $user->first_name }}</strong>
+                        </p>
+                        <input type="text" class="form-control d-none" id="aboutFirstNameInput" name="first_name"
+                            placeholder="First name" value="{{ $user->first_name }}">
+                    </div>
+                </div>
+                <!-- First name END -->
+            </div>
+
+            <div class="col-sm-6">
+                <!-- Last name START -->
+                <div class="d-flex align-items-center rounded border px-3 py-2">
+                    <div class="w-100">
+                        <p class="mb-1">
+                            <i class="bi bi-person fa-fw me-2"></i>
+                            Last name:
+                            <strong id="aboutLastNameText">{{ $user->last_name }}</strong>
+                        </p>
+                        <input type="text" class="form-control d-none" id="aboutLastNameInput" name="last_name"
+                            placeholder="Last name" value="{{ $user->last_name }}">
+                    </div>
+                </div>
+                <!-- Last name END -->
+            </div>
+
+            <div class="col-sm-6">
+    <div class="d-flex align-items-center rounded border px-3 py-2">
+        <div class="w-100">
+            <p class="mb-1">
+                <i class="bi bi-briefcase fa-fw me-2"></i>
+                Role:
+                <strong id="aboutRoleText">{{ $user->role ?: 'Not specified' }}</strong>
+            </p>
+            <input type="text" class="form-control d-none"
+                id="aboutRoleInput" name="role"
+                value="{{ $user->role }}" placeholder="Your role">
+        </div>
+    </div>
+</div>
+<div class="col-sm-6">
+    <div class="d-flex align-items-center rounded border px-3 py-2">
+        <div class="w-100">
+            <p class="mb-1">
+                <i class="bi bi-heart fa-fw me-2"></i>
+                Status:
+                <strong id="aboutStatusText">
+                    {{ $user->status ? ucfirst($user->status) : 'Not specified' }}
+                </strong>
+            </p>
+
+            <select class="form-control d-none"
+                id="aboutStatusInput" name="status">
+                <option value="">Select status</option>
+                <option value="single" {{ $user->status=='single'?'selected':'' }}>Single</option>
+                <option value="married" {{ $user->status=='married'?'selected':'' }}>Married</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+            <div class="col-sm-12">
+    <div class="d-flex align-items-center rounded border px-3 py-2">
+        <div class="w-100">
+            <p class="mb-1">
+                <i class="bi bi-geo-alt fa-fw me-2"></i>
+                Address:
+                <strong id="aboutAddressText">{{ $user->address ?: 'Not specified' }}</strong>
+            </p>
+
+            <textarea class="form-control d-none"
+                id="aboutAddressInput"
+                name="address"
+                rows="2"
+                placeholder="Your address">{{ $user->address }}</textarea>
+        </div>
+    </div>
+</div>
+
+
+            <div class="col-sm-6">
+                <!-- Joined on START -->
+                <div class="d-flex align-items-center rounded border px-3 py-2">
+                    <p class="mb-0">
+                        <i class="bi bi-clock-history fa-fw me-2"></i>
+                        Joined on:
+                        <strong>{{ $user->created_at ? $user->created_at->format('M d, Y') : 'Not available' }}</strong>
+                    </p>
+                </div>
+                <!-- Joined on END -->
+            </div>
+
+            <div class="col-sm-6">
+                <!-- Email START -->
+                <div class="d-flex align-items-center rounded border px-3 py-2">
+                    <div class="w-100">
+                    <p class="mb-1">
+                        <i class="bi bi-envelope fa-fw me-2"></i>
+                        Email:
+                        <strong id="aboutEmailText">{{ $user->email }}</strong>
+                    </p>
+                    <input type="email" class="form-control d-none" id="aboutEmailInput" name="email"
+                        value="{{ $user->email }}">
+                    </div>
+                </div>
+                <!-- Email END -->
+            </div>
+            <div class="col-sm-6 position-relative">
+                <a class="btn btn-dashed rounded w-100" href="#!">
+                    <i class="bi bi-plus-circle-dotted me-1"></i>Add an Information
+                </a>
+            </div>
+        </div>
+            <div class="text-end mt-3 d-none" id="aboutActions">
+                <button type="button" class="btn btn-sm btn-secondary me-2" id="aboutCancelBtn">Cancel</button>
+                <button type="submit" class="btn btn-sm btn-primary" id="aboutSaveBtn">Update</button>
+            </div>
+        </form>
+    </div>
+    <!-- Card body END -->
+</div>
 
 
           <div class="card">
