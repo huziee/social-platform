@@ -517,40 +517,125 @@
         loadModalComments(postId);
         commentsModal.show();
     }
+    // Global toggle function for replies
+    function toggleReplies(commentId) {
+        const container = document.getElementById(`replies-container-${commentId}`);
+        const btn = document.getElementById(`btn-replies-${commentId}`);
+
+        if (container.classList.contains('d-none')) {
+            container.classList.remove('d-none');
+            btn.innerHTML = `<i class="bi bi-dash"></i> Hide replies`;
+        } else {
+            container.classList.add('d-none');
+            btn.innerHTML = `<i class="bi bi-plus"></i> View ${container.children.length} replies`;
+        }
+    }
 
     function loadModalComments(postId) {
+        const container = document.getElementById('modal-comments');
+        container.innerHTML = '<div class="text-center"><div class="spinner-border spinner-border-sm"></div></div>';
+
+        // No limit passed here so modal shows all
         fetch(`/comments/${postId}`)
-            .then(res => {
-                if (!res.ok) throw new Error('Network response was not ok');
-                return res.json();
-            })
+            .then(res => res.json())
             .then(data => {
                 let html = '';
-                data.forEach(c => {
-                    let avatar = c.user.image ?
-                        `/assets/images/users/${c.user.image}` :
-                        `/assets/images/avatar/07.jpg`;
+                if (data.length === 0) {
+                    html = '<p class="text-center text-muted">No comments yet.</p>';
+                } else {
+                    data.forEach(c => {
+                        html += renderCommentHtml(c);
+                    });
+                }
+                container.innerHTML = html;
+            });
+    }
 
-                    html += `
-                <li class="comment-item mb-3">
-                    <div class="d-flex">
-                        <div class="avatar avatar-xs me-2">
-                            <img class="avatar-img rounded-circle" src="${avatar}">
-                        </div>
-                        <div class="bg-light p-3 rounded w-100">
-                            <div class="d-flex justify-content-between">
-                                <h6 class="mb-1">${c.user.username}</h6>
-                                <small>${timeAgo(c.created_at)}</small>
-                            </div>
-                            <p class="small mb-0">${c.comment}</p>
-                        </div>
+    function renderCommentHtml(c) {
+        let avatar = c.user.image ? `/assets/images/users/${c.user.image}` : `/assets/images/avatar/07.jpg`;
+        let hasReplies = c.replies && c.replies.length > 0;
+
+        // Process Replies HTML
+        let repliesHtml = '';
+        if (hasReplies) {
+            c.replies.forEach(reply => {
+                let rAvatar = reply.user.image ? `/assets/images/users/${reply.user.image}` :
+                    `/assets/images/avatar/07.jpg`;
+                repliesHtml += `
+                <div class="d-flex mt-3 ms-4" id="comment-${reply.id}">
+                    <div class="avatar avatar-xs me-2">
+                        <img class="avatar-img rounded-circle" src="${rAvatar}">
                     </div>
-                </li>`;
-                });
-                document.getElementById('modal-comments').innerHTML = html ||
-                    '<p class="text-center">No comments yet.</p>';
+                    <div class="bg-light p-2 rounded w-100">
+                        <h6 class="mb-0 small fw-bold">${reply.user.username}</h6>
+                        <p class="small mb-0">${reply.comment}</p>
+                    </div>
+                </div>`;
+            });
+        }
+
+        return `
+        <li class="comment-item mb-3" id="comment-${c.id}">
+            <div class="d-flex">
+                <div class="avatar avatar-xs me-2">
+                    <img class="avatar-img rounded-circle" src="${avatar}">
+                </div>
+                <div class="w-100">
+                    <div class="bg-light p-2 rounded">
+                        <h6 class="mb-0 small fw-bold">${c.user.username}</h6>
+                        <p class="small mb-0">${c.comment}</p>
+                    </div>
+                    <ul class="nav nav-divider py-1 small">
+                        <li class="nav-item">
+                            <a class="nav-link p-0 pe-2" href="javascript:void(0)" id="like-comment-${c.id}" onclick="likeComment(${c.id})">
+                                <i class="bi ${c.is_liked ? 'bi-heart-fill text-danger' : 'bi-heart'}"></i> 
+                                <span>${c.likes_count ?? 0} Like</span>
+                            </a>
+                        </li>
+                        <li class="nav-item"><a class="nav-link p-0 pe-2" href="javascript:void(0)" onclick="showReplyInput(${c.id})">Reply</a></li>
+                        <li class="nav-item text-muted">${timeAgo(c.created_at)}</li>
+                    </ul>
+
+                    ${hasReplies ? `
+                        <button class="btn btn-link btn-sm p-0 text-muted small mb-2" id="btn-replies-${c.id}" onclick="toggleReplies(${c.id})">
+                            <i class="bi bi-plus"></i> View ${c.replies.length} replies
+                        </button>
+                    ` : ''}
+                    
+                    <div id="replies-container-${c.id}" class="d-none">${repliesHtml}</div>
+
+                    <div class="reply-input-box mt-2 d-none" id="reply-box-${c.id}">
+                        <form onsubmit="submitReply(event, ${c.post_id}, ${c.id})">
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control" placeholder="Write a reply...">
+                                <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i></button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </li>`;
+    }
+
+    function likeComment(commentId) {
+        fetch(`/comments/${commentId}/like`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
+                }
             })
-            .catch(err => console.error('Fetch error:', err));
+            .then(res => res.json())
+            .then(data => {
+                const link = document.querySelector(`#like-comment-${commentId}`);
+                if (link) {
+                    // Fix: ensure we use data.count as returned by your LikeController
+                    link.querySelector('span').innerText = `${data.count ?? 0} Like`;
+                    link.querySelector('i').className = data.status === 'liked' ? 'bi bi-heart-fill text-danger' :
+                        'bi bi-heart';
+                }
+            })
+            .catch(err => console.error("Like error:", err));
     }
 
     function submitModalComment(e) {
@@ -673,4 +758,135 @@
                         .hide();
                 });
         });
+
+    // Initialize the Multiple Media Dropzone
+    const multipleDropzone = new Dropzone("#multiplePostDropzone", {
+        url: "{{ route('post.store') }}",
+        autoProcessQueue: false,
+        uploadMultiple: true,
+        parallelUploads: 20,
+        maxFiles: 20,
+        acceptedFiles: "image/*,video/*",
+        addRemoveLinks: true,
+    });
+
+    document.getElementById('multiplePostForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        let formData = new FormData(this);
+
+        // We append each file to a "media[]" array to keep them in order
+        multipleDropzone.files.forEach((file, index) => {
+            formData.append(`media[${index}]`, file);
+        });
+
+        fetch("{{ route('post.store') }}", {
+                method: "POST",
+                headers: {
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // Your existing logic to prepend the post to the feed
+                    document.getElementById('postsFeed').insertAdjacentHTML('afterbegin', data.html);
+                    multipleDropzone.removeAllFiles();
+                    this.reset();
+                    bootstrap.Modal.getInstance(document.getElementById('feedActionMultiple')).hide();
+                    if (typeof initSliders === 'function') initSliders();
+                }
+            });
+    });
+    // 1. Show/Hide Reply Input
+    function showReplyInput(commentId) {
+        let box = document.getElementById(`reply-box-${commentId}`);
+        box.classList.toggle('d-none');
+    }
+
+    function submitReply(event, postId, parentId) {
+        event.preventDefault();
+        let form = event.target;
+        let input = form.querySelector('input');
+        let commentText = input.value;
+
+        if (!commentText.trim()) return;
+
+        fetch("{{ route('comments.store') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                },
+                body: JSON.stringify({
+                    post_id: postId,
+                    parent_id: parentId,
+                    comment: commentText
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // 1. Clear the input field
+                    input.value = '';
+
+                    // 2. Hide the reply box
+                    document.getElementById(`reply-box-${parentId}`).classList.add('d-none');
+
+                    // 3. Find the container where replies live
+                    const repliesContainer = document.getElementById(`replies-container-${parentId}`);
+
+                    // 4. Ensure container is visible
+                    repliesContainer.classList.remove('d-none');
+
+                    // 5. Append the new reply HTML instantly
+                    const newReplyHtml = renderSingleReplyHtml(data.comment);
+                    repliesContainer.insertAdjacentHTML('beforeend', newReplyHtml);
+
+                    // 6. Optional: Update the "View Replies" button text if it exists
+                    const btn = document.getElementById(`btn-replies-${parentId}`);
+                    if (btn) btn.innerHTML = `<i class="bi bi-dash"></i> Hide replies`;
+                }
+            })
+            .catch(err => console.error('Reply error:', err));
+    }
+
+    function renderSingleReplyHtml(reply) {
+        // Check if user object exists, otherwise use current auth user data if available
+        let username = reply.user ? reply.user.username : 'You';
+        let avatar = (reply.user && reply.user.image) ?
+            `/assets/images/users/${reply.user.image}` :
+            `/assets/images/avatar/07.jpg`;
+
+        return `
+        <div class="d-flex mb-2" id="comment-${reply.id}">
+            <div class="avatar avatar-xs me-2">
+                <img class="avatar-img rounded-circle" style="width:25px; height:25px;" src="${avatar}">
+            </div>
+            <div class="bg-light p-2 rounded w-100">
+                <h6 class="mb-0 x-small fw-bold">${username}</h6>
+                <p class="small mb-0">${reply.comment}</p>
+            </div>
+        </div>`;
+    }
+
+    // 3. Delete a Comment
+    function deleteComment(commentId) {
+        if (!confirm("Are you sure?")) return;
+
+        fetch(`/comments/${commentId}`, {
+                method: "DELETE",
+                headers: {
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById(`comment-${commentId}`).remove();
+                }
+            });
+    }
 </script>

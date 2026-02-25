@@ -96,4 +96,7 @@ button .ff-btn{
 button.processing i{
     transform: scale(0.8);
 }
+.intro-mainpg {
+    font-size: 12px;
+}
     </style>

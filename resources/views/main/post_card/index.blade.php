@@ -178,49 +178,79 @@
             <!-- Comment wrap START -->
             <ul class="comment-wrap list-unstyled">
 
-                @foreach ($post->comments->take(3) as $comment)
-                    <li class="comment-item">
-                        <div class="d-flex">
+                @foreach ($post->comments->where('parent_id', null)->take(3) as $comment)
+<li class="comment-item mb-3" id="comment-{{ $comment->id }}">
+    <div class="d-flex">
+        <div class="avatar avatar-xs me-2">
+            <img class="avatar-img rounded-circle" src="{{ $comment->user->image ? asset('assets/images/users/'.$comment->user->image) : asset('assets/images/avatar/07.jpg') }}">
+        </div>
+        <div class="w-100">
+            <div class="bg-light p-2 rounded">
+                <div class="d-flex justify-content-between">
+                    <h6 class="mb-0 small fw-bold">{{ $comment->user->username }}</h6>
+                    <div class="dropdown">
+                        <i class="bi bi-three-dots cursor-pointer" data-bs-toggle="dropdown"></i>
+                        <ul class="dropdown-menu">
+                            @if(auth()->id() == $comment->user_id)
+                                <li><a class="dropdown-item text-danger" href="javascript:void(0)" onclick="deleteComment({{ $comment->id }})">Delete</a></li>
+                            @endif
+                            <li><a class="dropdown-item" href="#">Report</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <p class="small mb-0">{{ $comment->comment }}</p>
+            </div>
+            
+            <ul class="nav nav-divider py-1 small">
+    <li class="nav-item">
+        <a class="nav-link p-0 pe-2" href="javascript:void(0)" onclick="likeComment({{ $comment->id }})" id="like-comment-{{ $comment->id }}">
+            <i class="bi {{ $comment->isLikedByAuth() ? 'bi-heart-fill text-danger' : 'bi-heart' }}"></i> 
+            <span>{{ $comment->likes_count ?? 0 }} Like</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link p-0 pe-2" href="javascript:void(0)" onclick="showReplyInput({{ $comment->id }})">Reply</a>
+    </li>
+    <li class="nav-item text-secondary">{{ $comment->created_at->diffForHumans() }}</li>
+</ul>
 
-                            <!-- Avatar -->
-                            <div class="avatar avatar-story avatar-xs">
-                                <a href="#!">
-                                    <img class="avatar-img rounded-circle"
-                                        src="{{ $comment->user->image
-                                            ? asset('assets/images/users/' . $comment->user->image)
-                                            : asset('assets/images/avatar/07.jpg') }}"
-                                        alt="">
-                                </a>
-                            </div>
+            <div class="ms-4 mt-2 ps-3">
+    @if($comment->replies->count() > 0)
+        <button class="btn btn-link btn-sm text-secondary p-0 mb-2 small" 
+                onclick="toggleReplies({{ $comment->id }})" 
+                id="btn-replies-{{ $comment->id }}">
+            <i class="bi bi-plus"></i> View {{ $comment->replies->count() }} replies
+        </button>
+    @endif
 
-                            <!-- Comment by -->
-                            <div class="ms-2">
-                                <div class="bg-light p-3 rounded">
-                                    <div class="d-flex justify-content-between">
-                                        <h6 class="mb-1">
-                                            <a href="#!">{{ $comment->user->username }}</a>
-                                        </h6>
-                                        <small class="ms-2">
-                                            {{ $comment->created_at->diffForHumans() }}
-                                        </small>
-                                    </div>
-                                    <p class="small mb-0">{{ $comment->comment }}</p>
-                                </div>
-
-                                <!-- Comment react -->
-                                <ul class="nav nav-divider py-2 small">
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="#!">Like</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" href="#!">Reply</a>
-                                    </li>
-                                </ul>
-                            </div>
-
-                        </div>
-                    </li>
-                @endforeach
+    <div class="reply-container d-none" id="replies-container-{{ $comment->id }}">
+        @foreach($comment->replies as $reply)
+            <div class="d-flex mb-2" id="comment-{{ $reply->id }}">
+                <div class="avatar avatar-xs me-2">
+                    <img class="avatar-img rounded-circle" style="width:25px; height:25px;" 
+                         src="{{ $reply->user->image ? asset('assets/images/users/'.$reply->user->image) : asset('assets/images/avatar/07.jpg') }}">
+                </div>
+                <div class="bg-light p-2 rounded w-100">
+                    <h6 class="mb-0 x-small fw-bold">{{ $reply->user->username }}</h6>
+                    <p class="small mb-0">{{ $reply->comment }}</p>
+                </div>
+            </div>
+        @endforeach
+    </div>
+    
+    <div class="reply-input-box mt-2 d-none" id="reply-box-{{ $comment->id }}">
+        <form onsubmit="submitReply(event, {{ $post->id }}, {{ $comment->id }})">
+            <div class="input-group input-group-sm">
+                <input type="text" class="form-control" placeholder="Write a reply...">
+                <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i></button>
+            </div>
+        </form>
+    </div>
+</div>
+        </div>
+    </div>
+</li>
+@endforeach
 
                 @if ($post->comments->count() > 3)
                     <div class="card-footer border-0 py-0">

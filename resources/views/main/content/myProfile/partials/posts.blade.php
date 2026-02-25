@@ -1,21 +1,45 @@
+<style>
+    /* Post thumbnail container */
+.profile-post-thumb {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;   /* Perfect square */
+    overflow: hidden;
+    border-radius: 10px;
+    background: #111;
+    cursor: pointer;
+}
+
+/* Image & video fill the box */
+.profile-post-thumb img,
+.profile-post-thumb video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;   /* Crop to fill (IMPORTANT) */
+    display: block;
+}
+
+/* Overlay styling */
+.profile-post-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    color: #fff;
+    opacity: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    font-weight: 600;
+    transition: opacity 0.2s ease;
+}
+
+.profile-post-thumb:hover .profile-post-overlay {
+    opacity: 1;
+}
+</style>
 <!-- Share feed START -->
 <div class="card card-body">
-    <div class="d-flex mb-3">
-        <!-- Avatar -->
-        <div class="avatar avatar-xs me-2">
-            <a href="#">
-                <img class="avatar-img rounded-circle"
-                    src="{{ Auth::user()->image ? asset('assets/images/users/' . Auth::user()->image) : asset('assets/images/avatar/07.jpg') }}"
-                    alt="">
-            </a>
-        </div>
-        <!-- Post input -->
-        <form class="w-100">
-            <input class="form-control pe-4 border-0" placeholder="Share your thoughts..." data-bs-toggle="modal"
-                data-bs-target="#modalCreateFeed">
-        </form>
-    </div>
-</div>
 <!-- Share feed END -->
 
 <!-- User posts grid START -->
@@ -62,3 +86,6 @@
     @endif
 </div>
 <!-- User posts grid END -->
+</div>
+
+

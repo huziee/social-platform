@@ -15,6 +15,8 @@ return new class extends Migration {
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('post_id')->constrained()->cascadeOnDelete();
             $table->text('comment');
+            $table->unsignedBigInteger('parent_id')->nullable()->after('post_id');
+            $table->foreign('parent_id')->references('id')->on('comments')->onDelete('cascade');
             $table->timestamps();
         });
     }

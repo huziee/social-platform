@@ -24,9 +24,10 @@
                                     class="rounded-circle" width="120" height="120" alt="Profile Image"></a>
                         </div>
                         <!-- Info -->
-                        <h5 class="mb-0"> <a href="#!">{{ Auth::user()->username }}</a> </h5>
+                        <h5 class="mb-0"> <a href="{{ route('profile.index') }}">{{ Auth::user()->username }}</a>
+                        </h5>
                         <small>{{ Auth::user()->first_name . ' ' . Auth::user()->last_name }}</small>
-                        <p class="mt-3">{{ Auth::user()->description }}
+                        <p class="mt-3">{{ \Illuminate\Support\Str::limit(Auth::user()->description, 75, '...') }}
                         </p>
 
                         <!-- User stat START -->
@@ -62,6 +63,14 @@
 
                         <!-- PROFILE TABS (hash-based) -->
                         <li class="nav-item">
+                            <a class="nav-link" href="{{ route('profile.index') }}">
+                                <img class="me-2 h-20px fa-fw"
+                                    src="{{ asset('assets/images/icon/person-outline-filled.svg') }}" alt="">
+                                <span>Profile</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
                             <a class="nav-link" href="{{ route('profile.index') }}#posts">
                                 <img class="me-2 h-20px fa-fw"
                                     src="{{ asset('assets/images/icon/home-outline-filled.svg') }}" alt="">
@@ -72,7 +81,8 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('profile.index') }}#connections">
                                 <img class="me-2 h-20px fa-fw"
-                                    src="{{ asset('assets/images/icon/handshake-outline-filled.svg') }}" alt="">
+                                    src="{{ asset('assets/images/icon/handshake-outline-filled.svg') }}"
+                                    alt="">
                                 <span>Connections</span>
                             </a>
                         </li>
@@ -82,14 +92,6 @@
                                 <img class="me-2 h-20px fa-fw"
                                     src="{{ asset('assets/images/icon/chat-outline-filled.svg') }}" alt="">
                                 <span>Messages</span>
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('profile.index') }}">
-                                <img class="me-2 h-20px fa-fw"
-                                    src="{{ asset('assets/images/icon/person-outline-filled.svg') }}" alt="">
-                                <span>Profile</span>
                             </a>
                         </li>
 
@@ -108,8 +110,28 @@
                 <!-- Card body END -->
             </div>
             <!-- Card END -->
+            <ul class="nav justify-content-center justify-content-sm-center my-2">
+                <li class="nav-item">
+                    <a class="nav-link px-2 fs-5" href="#"><i class="fa-brands fa-facebook-square"></i></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-2 fs-5" href="#"><i class="fa-brands fa-twitter-square"></i></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-2 fs-5" href="#"><i class="fa-brands fa-linkedin"></i></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-2 fs-5" href="#"><i class="fa-brands fa-youtube-square"></i></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-2 fs-5" href="#"><i class="fa-brands fa-instagram"></i></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link px-2 fs-5" href="#"><i class="fa-brands fa-tiktok"></i></a>
+                </li>
+            </ul>
             <!-- Copyright -->
-            <p class="small text-center mt-3">©2024 <a class="text-reset" target="_blank" href="https://stackbros.in/">
+            <p class="small text-center">©2024 <a class="text-reset" target="_blank" href="https://stackbros.in/">
                     StackBros </a></p>
         </div>
     </div>

@@ -38,26 +38,25 @@
         <div class="col-md-8 col-lg-6 vstack gap-4">
 
             <!-- Story START -->
-            
-                @include('main.content.home.stories')
+
+            @include('main.content.home.stories')
 
             <!-- Story END -->
 
             <!-- Share feed START -->
             <div class="card card-body">
                 <div class="d-flex mb-3">
-                    <!-- Avatar -->
-                    <div class="avatar avatar-xs me-2">
-                        <a href="#"> <img class="avatar-img rounded-circle" src="assets/images/avatar/03.jpg"
-                                alt=""> </a>
-                    </div>
-                    <!-- Post input -->
-                    <form class="w-100">
-                        <textarea class="form-control pe-4 border-0" rows="2" data-autoresize placeholder="Share your thoughts..."></textarea>
-                    </form>
+                    <div class="btn-primary-soft py-2 px-3 rounded intro-mainpg">Show the world what you're creating. Drop a
+                        photo or video below.</div>
                 </div>
                 <!-- Share feed toolbar START -->
-                <ul class="nav nav-pills nav-stack small fw-normal">
+                <ul class="nav nav-pills nav-stack small fw-normal intro-mainpg">
+                    <li class="nav-item">
+                        <a class="nav-link bg-light py-1 px-2 mb-0" href="#!" data-bs-toggle="modal"
+                            data-bs-target="#feedActionMultiple" title="More Options">
+                            <i class="bi bi-plus-square-fill text-primary pe-2"></i>More
+                        </a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link bg-light py-1 px-2 mb-0" href="#!" data-bs-toggle="modal"
                             data-bs-target="#feedActionPhoto"> <i class="bi bi-image-fill text-success pe-2"></i>Photo</a>
@@ -72,23 +71,10 @@
                             data-bs-target="#modalCreateEvents"> <i
                                 class="bi bi-calendar2-event-fill text-danger pe-2"></i>Event </a>
                     </li>
-                    <li class="nav-item dropdown ms-lg-auto">
-                        <a class="nav-link bg-light py-1 px-2 mb-0" href="#" id="feedActionShare"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-three-dots"></i>
-                        </a>
-                        <!-- Dropdown menu -->
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="feedActionShare">
-                            <li><a class="dropdown-item" href="#"> <i class="bi bi-envelope fa-fw pe-2"></i>Create
-                                    a poll</a></li>
-                            <li><a class="dropdown-item" href="#"> <i class="bi bi-bookmark-check fa-fw pe-2"></i>Ask
-                                    a question </a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li><a class="dropdown-item" href="#"> <i
-                                        class="bi bi-pencil-square fa-fw pe-2"></i>Help</a></li>
-                        </ul>
+                    <li class="nav-item">
+                        <a class="nav-link bg-light py-1 px-2 mb-0" href="#"><i
+                                class="bi bi-chat-left-dots-fill text-success pe-2"></i>Ask
+                            a question </a>
                     </li>
                 </ul>
                 <!-- Share feed toolbar END -->
@@ -326,6 +312,8 @@
         <!-- Right sidebar END -->
 
     </div> <!-- Row END -->
+
+    @include('main.modals.homeModals.multipleCreateModal')
 
     <!-- Modal create Feed photo START -->
     @include('main.modals.homeModals.postCreateModal')

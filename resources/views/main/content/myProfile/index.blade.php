@@ -44,7 +44,7 @@
 
         #postModal .card {
             max-width: 680px;
-            margin: 0 auto;
+            margin: 15px 20px;
         }
 
         /* Any media inside the loaded post card in the modal */
@@ -93,14 +93,14 @@
                             <button class="btn btn-sm btn-danger-soft me-2" type="button"> <i
                                                 class="bi bi-file-earmark-pdf"></i></button>
                             <button class="btn btn-sm btn-primary-soft me-2" type="button"> <i
-                                                class="bi bi-bookmark fa-fw"></i></button>
-                            <button class="btn btn-sm btn-success-soft me-2" type="button"> <i
-                                                class="bi bi-lock fa-fw"></i></button>
+                                                class="bi bi-send-fill"></i></button>
+                            {{-- <button class="btn btn-sm btn-success-soft me-2" type="button"> <i
+                                                class="bi bi-lock fa-fw"></i></button> --}}
                         </div>
                     </div>
                     <!-- List profile -->
                     <ul class="list-inline mb-0 text-center text-sm-start mt-3 mt-sm-0">
-                        <li class="list-inline-item"><i class="bi bi-briefcase me-1"></i>{{ Auth::user()->description }}</li>
+                        <li class="list-inline-item"><i class="bi bi-card-text me-1 fs-6 me-2"></i>{{ Auth::user()->description }}</li>
                 </div>
                 <!-- Card body END -->
                 <div class="card-footer mt-2 pt-2 pb-0">
@@ -108,11 +108,12 @@
                         <li class="nav-item">
                             <a class="nav-link active" href="#about">About</a>
                         </li>
+                        
                         <li class="nav-item">
-                            <a class="nav-link" href="#posts">Posts ({{ Auth::user()->posts()->count() }})</a>
+                            <a class="nav-link" href="#posts">Posts <span class="badge bg-success bg-opacity-10 text-success small">{{ Auth::user()->posts()->count() }}</span></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#connections">Followers ({{ Auth::user()->followers()->count() }})</a>
+                            <a class="nav-link" href="#connections">Followers <span class="badge bg-success bg-opacity-10 text-success small">{{ Auth::user()->followers()->count() }}</span> </a>
                         </li>
 
                     </ul>
@@ -1084,6 +1085,4 @@
                 .catch(err => console.error('Like toggle failed:', err));
         }
     </script>
-
-
 @endsection

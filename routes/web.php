@@ -35,6 +35,8 @@ Route::middleware('auth')->group(function () {
 Route::post('/like/{post}', [LikeController::class, 'togglestatus']);
     Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
     Route::get('/comments/{postId}', [CommentController::class, 'fetch'])->name('comments.fetch');
+    Route::delete('/comments/{id}', [CommentController::class, 'destroy']);
+Route::post('/comments/{id}/like', [App\Http\Controllers\CommentController::class, 'toggleLike']);
 
 
 
