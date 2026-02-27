@@ -3,7 +3,9 @@
         <div class="d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center">
                 <div class="avatar avatar-story me-2">
-                    <a href="#!">
+    <a href="javascript:void(0)" 
+       class="open-user-story"
+       data-user-id="{{ $post->user->id }}">
                         <img class="avatar-img rounded-circle"
                             src="{{ $post->user->image ? asset('assets/images/users/' . $post->user->image) : asset('assets/images/avatar/07.jpg') }}"
                             alt="{{ $post->user->username }}">
@@ -12,8 +14,14 @@
                 <div>
                     <div class="nav nav-divider">
                         <h6 class="nav-item card-title mb-0">
-                            <a href="#!">{{ $post->user->username }}</a>
-                        </h6>
+    @if(auth()->id() === $post->user_id)
+        {{-- Link to own profile --}}
+        <a href="{{ route('profile.index') }}">{{ $post->user->username }}</a>
+    @else
+        {{-- Link to public profile of others --}}
+        <a href="{{ route('user.profile', $post->user->username) }}">{{ $post->user->username }}</a>
+    @endif
+</h6>
                         <span class="nav-item small">{{ $post->created_at->diffForHumans() }}</span>
                         @if (auth()->check() && auth()->id() !== $post->user_id)
                             <span class="nav-item small ms-2">

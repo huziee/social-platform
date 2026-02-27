@@ -99,4 +99,13 @@ button.processing i{
 .intro-mainpg {
     font-size: 12px;
 }
+.avatar-story.has-story img {
+    border: 3px solid #1877f2; /* blue */
+    padding: 2px;
+}
+
+.avatar-story.story-seen img {
+    border: 3px solid #6c757d; /* grey */
+    padding: 2px;
+}
     </style>

@@ -27,6 +27,12 @@
                         <h5 class="mb-0"> <a href="{{ route('profile.index') }}">{{ Auth::user()->username }}</a>
                         </h5>
                         <small>{{ Auth::user()->first_name . ' ' . Auth::user()->last_name }}</small>
+    @if(Auth::user()->is_subscribed)
+        <span class="ms-1 text-primary" title="Verified Member">
+            <i class="bi bi-patch-check-fill text-success small"></i>
+        </span>
+    @endif
+            
                         <p class="mt-3">{{ \Illuminate\Support\Str::limit(Auth::user()->description, 75, '...') }}
                         </p>
 
@@ -71,6 +77,13 @@
                         </li>
 
                         <li class="nav-item">
+    <a class="nav-link" href="{{ route('plans.index') }}#plans"> <img class="me-2 h-20px fa-fw"
+            src="{{ asset('assets/images/icon/clipboard-outline-filled.svg') }}" alt="">
+        <span>Plans</span>
+    </a>
+</li>
+
+                        <li class="nav-item">
                             <a class="nav-link" href="{{ route('profile.index') }}#posts">
                                 <img class="me-2 h-20px fa-fw"
                                     src="{{ asset('assets/images/icon/home-outline-filled.svg') }}" alt="">
@@ -88,7 +101,7 @@
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('home.chat') }}">
+                            <a class="nav-link" href="{{ route('messages.index') }}">
                                 <img class="me-2 h-20px fa-fw"
                                     src="{{ asset('assets/images/icon/chat-outline-filled.svg') }}" alt="">
                                 <span>Messages</span>

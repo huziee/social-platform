@@ -30,6 +30,9 @@ class User extends Authenticatable
         'role',
         'status',
         'address',
+        'is_subscribed', // Add this
+    'plan_type',     // Add this
+    'subscription_ends_at',// Add this
     ];
 
     public function following()
@@ -91,4 +94,17 @@ class User extends Authenticatable
     {
         return $this->hasMany(Comment::class)->latest();
     }
+
+    public function sentMessages() {
+    return $this->hasMany(Message::class, 'sender_id');
+}
+
+public function receivedMessages() {
+    return $this->hasMany(Message::class, 'receiver_id');
+}
+
+public function messagesSent()
+{
+    return $this->hasMany(Message::class, 'sender_id');
+}
 }

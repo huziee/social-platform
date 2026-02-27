@@ -6,7 +6,7 @@
                     @csrf
 
                     <div class="modal-header">
-                        <h5 class="modal-title">Add post photo</h5>
+                        <h5 class="modal-title">Add Multiple Stuff</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
 

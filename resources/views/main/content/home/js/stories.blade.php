@@ -139,4 +139,30 @@
         }
 
     });
+    document.addEventListener('click', function (e) {
+
+    const avatar = e.target.closest('.open-user-story');
+
+    if (!avatar) return;
+
+    e.preventDefault();
+
+    const userId = avatar.dataset.userId;
+
+    if (!zuckInstance) return;
+
+    const storyId = `user-${userId}`;
+
+    // 🔥 Find story element rendered by Zuck
+    const storyEl = document.querySelector(
+        `#stories-wrapper [data-id="${storyId}"]`
+    );
+
+    if (storyEl) {
+        storyEl.click(); // ✅ triggers Zuck's internal handler
+    } else {
+        console.warn('Story not found:', storyId);
+    }
+
+});
 </script>

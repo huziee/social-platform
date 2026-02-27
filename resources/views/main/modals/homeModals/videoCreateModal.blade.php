@@ -14,13 +14,6 @@
                 <form id="videoPostForm">
 
                     <div class="d-flex mb-3">
-                        <div class="avatar avatar-xs me-2">
-                            <img class="avatar-img rounded-circle"
-                                src="{{ auth()->user()->image
-                                    ? asset('assets/images/users/' . auth()->user()->image)
-                                    : asset('assets/images/avatar/07.jpg') }}">
-                        </div>
-
                         <textarea name="caption" class="form-control pe-4 fs-3 lh-1 border-0" rows="2"
                             placeholder="Share your thoughts..."></textarea>
                     </div>

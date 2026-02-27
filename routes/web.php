@@ -7,6 +7,8 @@ use App\Http\Controllers\MyAccountController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\StoryController;
+use App\Http\Controllers\PlanController;
+use App\Http\Controllers\ChatController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -32,11 +34,11 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/posts/{id}/preview', [PostController::class, 'preview'])->name('posts.preview');
 
-Route::post('/like/{post}', [LikeController::class, 'togglestatus']);
+    Route::post('/like/{post}', [LikeController::class, 'togglestatus']);
     Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
     Route::get('/comments/{postId}', [CommentController::class, 'fetch'])->name('comments.fetch');
     Route::delete('/comments/{id}', [CommentController::class, 'destroy']);
-Route::post('/comments/{id}/like', [App\Http\Controllers\CommentController::class, 'toggleLike']);
+    Route::post('/comments/{id}/like', [App\Http\Controllers\CommentController::class, 'toggleLike']);
 
 
 
@@ -44,16 +46,35 @@ Route::post('/comments/{id}/like', [App\Http\Controllers\CommentController::clas
         ->name('follow.toggle');
 
     Route::get('/my-profile', [MyAccountController::class, 'index'])->name('profile.index');
+    Route::get('/my-connections', [MyAccountController::class, 'connections'])->name('profile.connections');
+    Route::get('/user/{username}', [MyAccountController::class, 'show'])->name('user.profile');
+
+
     Route::get('/pp', [MyAccountController::class, 'privacyTerms'])->name('home.pp');
     Route::get('/help', [MyAccountController::class, 'help'])->name('home.help');
-    Route::get('/chat', [MyAccountController::class, 'chat'])->name('home.chat');
+    // Route::get('/chat', [MyAccountController::class, 'chat'])->name('home.chat');
 
-    Route::get('/get-stories',[StoryController::class, 'index'])->name('stories.get');
-    Route::post('/stories/upload',[StoryController::class, 'store'])->name('stories.store');
+    Route::get('/get-stories', [StoryController::class, 'index'])->name('stories.get');
+    Route::post('/stories/upload', [StoryController::class, 'store'])->name('stories.store');
     Route::delete('/delete-stories/{id}', [StoryController::class, 'destroy'])
-    ->name('stories.destroy');
+        ->name('stories.destroy');
 
     Route::post('/my-profile/about', [ProfileController::class, 'updateAbout'])->name('profile.about.update');
+
+    Route::get('/messages', [ChatController::class, 'chat'])
+        ->name('messages.index');
+
+    Route::get('/subscription-plans', [PlanController::class, 'index'])
+        ->name('plans.index');
+    Route::post('/subscribe/process', [PlanController::class, 'processSubscription'])
+         ->name('subscribe.process');
+    Route::get('/subscribe/success', [PlanController::class, 'success'])->name('subscribe.success');
+
+    Route::get('/messages/{id}', [ChatController::class, 'chat'])
+        ->name('messages.show');
+
+    Route::post('/send-message', [ChatController::class, 'sendMessage'])
+        ->name('messages.send');
 
 
 

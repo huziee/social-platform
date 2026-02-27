@@ -85,7 +85,14 @@
                         </div>
                         <div class="ms-sm-4 mt-sm-3">
                             <!-- Info -->
-                            <h1 class="mb-0 h5">{{ Auth::user()->first_name }}  {{ Auth::user()->last_name }} <i class="bi bi-patch-check-fill text-success small"></i></h1>
+                            <h1 class="mb-0 h5">{{ Auth::user()->first_name }}  {{ Auth::user()->last_name }} 
+                                 @if(Auth::user()->is_subscribed)
+        <span class="ms-1 text-primary" title="Verified Member">
+            <i class="bi bi-patch-check-fill text-success small"></i>
+        </span>
+    @endif
+                            </h1>
+                            
                             <p>{{ Auth::user()->username }}</p>
                         </div>
                         <!-- Button -->

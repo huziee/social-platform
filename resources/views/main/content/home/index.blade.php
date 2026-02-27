@@ -52,10 +52,8 @@
                 <!-- Share feed toolbar START -->
                 <ul class="nav nav-pills nav-stack small fw-normal intro-mainpg">
                     <li class="nav-item">
-                        <a class="nav-link bg-light py-1 px-2 mb-0" href="#!" data-bs-toggle="modal"
-                            data-bs-target="#feedActionMultiple" title="More Options">
-                            <i class="bi bi-plus-square-fill text-primary pe-2"></i>More
-                        </a>
+                        <a  class="nav-link bg-light py-1 px-2 mb-0" href="#!" data-bs-toggle="modal"
+                            data-bs-target="#feedActionMultiple" title="More Options"> <i class="fa-solid fa-plus"></i> </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link bg-light py-1 px-2 mb-0" href="#!" data-bs-toggle="modal"
