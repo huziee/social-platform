@@ -84,6 +84,103 @@ Header END -->
     <!-- Theme Functions -->
     <script src="{{ asset('assets/js/functions.js') }}"></script>
 
+    <script>
+        window.__authUserId = {{ auth()->check() ? auth()->id() : 'null' }};
+        window.__savePostUrlTemplate = "{{ route('posts.save', ['post' => '__POST_ID__']) }}";
+
+        window.updateFollowCounts = function(payload) {
+            if (!payload) return;
+            const targetId = payload.target_id;
+            const authId = payload.auth_id || window.__authUserId;
+
+            if (targetId && typeof payload.target_followers_count !== 'undefined') {
+                document.querySelectorAll(`[data-followers-count][data-user-id="${targetId}"]`)
+                    .forEach(el => el.textContent = payload.target_followers_count);
+            }
+
+            if (authId && typeof payload.auth_followers_count !== 'undefined') {
+                document.querySelectorAll(`[data-followers-count][data-user-id="${authId}"]`)
+                    .forEach(el => el.textContent = payload.auth_followers_count);
+            }
+
+            if (authId && typeof payload.auth_following_count !== 'undefined') {
+                document.querySelectorAll(`[data-following-count][data-user-id="${authId}"]`)
+                    .forEach(el => el.textContent = payload.auth_following_count);
+            }
+        };
+
+        window.updateFollowButton = function(element, following) {
+            if (!element) return;
+            const icon = element.querySelector('i');
+
+            if (element.classList.contains('text-primary') || element.classList.contains('text-secondary')) {
+                element.classList.toggle('text-primary', !following);
+                element.classList.toggle('text-secondary', following);
+            }
+
+            if (element.classList.contains('btn-primary') || element.classList.contains('btn-secondary')) {
+                element.classList.toggle('btn-primary', !following);
+                element.classList.toggle('btn-secondary', following);
+            }
+
+            if (icon) {
+                if (icon.classList.contains('bi-plus-circle-fill') || icon.classList.contains('bi-check-circle-fill')) {
+                    icon.classList.toggle('bi-plus-circle-fill', !following);
+                    icon.classList.toggle('bi-check-circle-fill', following);
+                }
+                if (icon.classList.contains('bi-person-plus') || icon.classList.contains('bi-person-check-fill')) {
+                    icon.classList.toggle('bi-person-plus', !following);
+                    icon.classList.toggle('bi-person-check-fill', following);
+                }
+            }
+        };
+
+        window.updateSavedCount = function(count) {
+            document.querySelectorAll('[data-saved-count]').forEach(el => {
+                el.textContent = count;
+            });
+        };
+
+        window.toggleSavePost = function(postId, element) {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            if (!csrfToken) return;
+
+            const saveUrl = window.__savePostUrlTemplate.replace('__POST_ID__', postId);
+            fetch(saveUrl, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status !== 'success') return;
+
+                    if (typeof data.saved_count !== 'undefined') {
+                        window.updateSavedCount(data.saved_count);
+                    }
+
+                    if (!element) return;
+                    const icon = element.querySelector('i');
+                    const text = element.querySelector('.js-save-text');
+                    const isSaved = !!data.saved;
+
+                    if (icon) {
+                        icon.classList.toggle('bi-bookmark', !isSaved);
+                        icon.classList.toggle('bi-bookmark-check-fill', isSaved);
+                    }
+
+                    if (text) {
+                        text.textContent = isSaved ? 'Unsave post' : 'Save post';
+                    }
+                })
+                .catch(() => {
+                    // Silent fail
+                });
+        };
+    </script>
+
     @yield('script')
 
 </body>

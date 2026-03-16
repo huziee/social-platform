@@ -74,9 +74,13 @@
                                             @foreach ($users as $user)
                                                 <li>
                                                     <a href="{{ route('messages.show', $user->id) }}"
-                                                        class="nav-link text-start
+                                                        class="nav-link text-start js-user-link
                                                           {{ isset($selectedUser) && $selectedUser->id == $user->id ? 'active bg-primary text-white' : '' }}
-                                                          {{ $user->unread_count > 0 ? 'bg-warning bg-opacity-25 fw-bold' : '' }}">
+                                                          {{ $user->unread_count > 0 ? 'bg-warning bg-opacity-25 fw-bold' : '' }}"
+                                                        data-user-id="{{ $user->id }}"
+                                                        data-username="{{ $user->username }}"
+                                                        data-full-name="{{ $user->first_name }} {{ $user->last_name }}"
+                                                        data-image="{{ $user->image ? asset('assets/images/users/' . $user->image) : asset('assets/images/avatar/07.jpg') }}">
                                                         <div class="d-flex">
                                                             <div class="flex-shrink-0 avatar me-2">
                                                                 <img class="avatar-img rounded-circle"
@@ -87,11 +91,11 @@
                                                                 <h6 class="mb-0 mt-1">
                                                                     {{ $user->first_name }} {{ $user->last_name }}
 
-                                                                    @if ($user->unread_count > 0)
-                                                                        <span class="badge bg-danger ms-2">
-                                                                            {{ $user->unread_count }}
-                                                                        </span>
-                                                                    @endif
+                                                                    <span class="badge bg-danger ms-2 js-unread-badge"
+                                                                        data-user-id="{{ $user->id }}"
+                                                                        style="{{ $user->unread_count > 0 ? '' : 'display: none;' }}">
+                                                                        {{ $user->unread_count }}
+                                                                    </span>
                                                                 </h6>
                                                                 <p class="text-muted my-1">{{ $user->username }}</p>
                                                             </div>
@@ -452,5 +456,6 @@
                 }
             });
         });
+
     </script>
 @endsection

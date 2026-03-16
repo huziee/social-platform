@@ -9,6 +9,7 @@ use App\Http\Controllers\LikeController;
 use App\Http\Controllers\StoryController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\SavedPostController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -72,9 +73,15 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/messages/{id}', [ChatController::class, 'chat'])
         ->name('messages.show');
+        Route::post('/subscribe/cancel', [PlanController::class, 'cancelSubscription'])
+     ->name('subscribe.cancel');
 
     Route::post('/send-message', [ChatController::class, 'sendMessage'])
         ->name('messages.send');
+
+    Route::post('/posts/{post}/save', [SavedPostController::class, 'toggle'])
+        ->name('posts.save');
+
 
 
 
@@ -83,4 +90,3 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__ . '/auth.php';
-

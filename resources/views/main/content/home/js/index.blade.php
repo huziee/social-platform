@@ -163,31 +163,31 @@
 
                         post.videos.forEach(video => {
                             videoContainer.innerHTML += `
-        <div class="col-6" id="video-${video.id}">
-            <div class="card position-relative">
+                            <div class="col-6" id="video-${video.id}">
+                                <div class="card position-relative">
 
-                <video controls class="w-100 rounded">
-                    <source src="/${video.file_path}" type="video/mp4">
-                </video>
+                                    <video controls class="w-100 rounded">
+                                        <source src="/${video.file_path}" type="video/mp4">
+                                    </video>
 
-                <!-- DELETE BUTTON -->
-                <button type="button"
-                    class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1"
-                    onclick="deleteVideo(event, ${video.id})">✕</button>
+                                    <!-- DELETE BUTTON -->
+                                    <button type="button"
+                                        class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1"
+                                        onclick="deleteVideo(event, ${video.id})">✕</button>
 
-                <!-- ✏️ EDIT BUTTON -->
-                <button type="button"
-                    class="btn btn-secondary btn-sm position-absolute bottom-0 end-0 m-1"
-                    onclick="triggerVideoFile(${video.id})">✏️</button>
+                                    <!-- ✏️ EDIT BUTTON -->
+                                    <button type="button"
+                                        class="btn btn-secondary btn-sm position-absolute bottom-0 end-0 m-1"
+                                        onclick="triggerVideoFile(${video.id})">✏️</button>
 
-                <!-- HIDDEN FILE INPUT -->
-                <input type="file"
-                    accept="video/*"
-                    class="d-none"
-                    id="video-file-${video.id}"
-                    onchange="replaceVideo(${video.id}, this)">
-            </div>
-        </div>`;
+                                    <!-- HIDDEN FILE INPUT -->
+                                    <input type="file"
+                                        accept="video/*"
+                                        class="d-none"
+                                        id="video-file-${video.id}"
+                                        onchange="replaceVideo(${video.id}, this)">
+                                </div>
+                            </div>`;
                         });
                     }
 
@@ -204,7 +204,7 @@
 
     function toggleFollow(userId, element) {
 
-        event.preventDefault(); // 🚫 stop # jump
+        event.preventDefault(); // stop # jump
 
         if (element.classList.contains('processing')) return;
         element.classList.add('processing');
@@ -218,44 +218,12 @@
             })
             .then(res => res.json())
             .then(data => {
-
                 if (data.status === 'success') {
-
-                    const icon = element.querySelector('i');
-
-                    if (data.following) {
-
-                        // ===== FOLLOWED STATE =====
-
-                        element.classList.remove('text-primary', 'btn-primary');
-                        element.classList.add('text-secondary', 'btn-secondary');
-
-                        icon.classList.remove(
-                            'bi-person-plus',
-                            'bi-plus-circle-fill'
-                        );
-
-                        icon.classList.add(
-                            'bi-person-check-fill',
-                            'bi-check-circle-fill'
-                        );
-
-                    } else {
-
-                        // ===== UNFOLLOWED STATE =====
-
-                        element.classList.remove('text-secondary', 'btn-secondary');
-                        element.classList.add('text-primary', 'btn-primary');
-
-                        icon.classList.remove(
-                            'bi-person-check-fill',
-                            'bi-check-circle-fill'
-                        );
-
-                        icon.classList.add(
-                            'bi-person-plus',
-                            'bi-plus-circle-fill'
-                        );
+                    if (window.updateFollowButton) {
+                        window.updateFollowButton(element, data.following);
+                    }
+                    if (window.updateFollowCounts) {
+                        window.updateFollowCounts(data);
                     }
                 }
             })

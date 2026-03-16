@@ -113,14 +113,17 @@
                 <div class="card-footer mt-2 pt-2 pb-0">
                     <ul class="nav nav-bottom-line justify-content-center justify-content-md-start border-0">
                         <li class="nav-item">
-                            <a class="nav-link active" href="#about">About</a>
+                            <a class="nav-link" href="#about">About</a>
                         </li>
                         
                         <li class="nav-item">
                             <a class="nav-link" href="#posts">Posts <span class="badge bg-success bg-opacity-10 text-success small">{{ Auth::user()->posts()->count() }}</span></a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#connections">Followers <span class="badge bg-success bg-opacity-10 text-success small">{{ Auth::user()->followers()->count() }}</span> </a>
+                            <a class="nav-link" href="#connections">Followers <span class="badge bg-success bg-opacity-10 text-success small" data-followers-count data-user-id="{{ Auth::id() }}">{{ Auth::user()->followers()->count() }}</span> </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#saved">Saved <span class="badge bg-success bg-opacity-10 text-success small" data-saved-count>{{ isset($savedPosts) ? $savedPosts->count() : 0 }}</span></a>
                         </li>
 
                     </ul>
@@ -141,6 +144,10 @@
                 @include('main.content.myProfile.partials.about')
             </div>
 
+            <div id="saved" class="profile-section d-none">
+                @include('main.content.myProfile.partials.saved')
+            </div>
+
 
 
         </div>
@@ -148,6 +155,15 @@
 
         <!-- Right sidebar START -->
         <div class="col-lg-4">
+
+            @php
+                $user = Auth::user();
+                $followersList = isset($followers) ? $followers : collect();
+                $photoMedia = isset($posts)
+                    ? $posts->pluck('media')->flatten()->where('type', 'image')->take(5)
+                    : collect();
+                $friendsPreview = $followersList->take(4);
+            @endphp
 
             <div class="row g-4">
 
@@ -160,15 +176,19 @@
                         </div>
                         <!-- Card body START -->
                         <div class="card-body position-relative pt-0">
-                            <p>He moonlights difficult engrossed it, sportsmen. Interested has all Devonshire difficulty gay
-                                assistance joy.</p>
+                            <p>{{ $user->description ?: 'No bio added yet. Tell people a bit about yourself.' }}</p>
                             <!-- Date time -->
                             <ul class="list-unstyled mt-3 mb-0">
-                                <li class="mb-2"> <i class="bi bi-calendar-date fa-fw pe-1"></i> Born: <strong> October
-                                        20, 1990 </strong> </li>
-                                <li class="mb-2"> <i class="bi bi-heart fa-fw pe-1"></i> Status: <strong> Single </strong>
+                                <li class="mb-2"> <i class="bi bi-calendar-date fa-fw pe-1"></i> Born:
+                                    <strong>
+                                        {{ $user->date_of_birth ? \Carbon\Carbon::parse($user->date_of_birth)->format('F d, Y') : 'Not specified' }}
+                                    </strong>
                                 </li>
-                                <li> <i class="bi bi-envelope fa-fw pe-1"></i> Email: <strong> example@abc.com </strong>
+                                <li class="mb-2"> <i class="bi bi-heart fa-fw pe-1"></i> Status:
+                                    <strong>{{ $user->status ? ucfirst($user->status) : 'Not specified' }}</strong>
+                                </li>
+                                <li> <i class="bi bi-envelope fa-fw pe-1"></i> Email:
+                                    <strong>{{ $user->email }}</strong>
                                 </li>
                             </ul>
                         </div>
@@ -188,53 +208,9 @@
                         <!-- Card header END -->
                         <!-- Card body START -->
                         <div class="card-body position-relative pt-0">
-                            <!-- Experience item START -->
-                            <div class="d-flex">
-                                <!-- Avatar -->
-                                <div class="avatar me-3">
-                                    <a href="#!"> <img class="avatar-img rounded-circle"
-                                            src="assets/images/logo/08.svg" alt=""> </a>
-                                </div>
-                                <!-- Info -->
-                                <div>
-                                    <h6 class="card-title mb-0"><a href="#!"> Apple Computer, Inc. </a></h6>
-                                    <p class="small">May 2015 – Present Employment Duration 8 mos <a
-                                            class="btn btn-primary-soft btn-xs ms-2" href="#!">Edit </a></p>
-                                </div>
+                            <div class="text-muted small">
+                                No experience added yet.
                             </div>
-                            <!-- Experience item END -->
-
-                            <!-- Experience item START -->
-                            <div class="d-flex">
-                                <!-- Avatar -->
-                                <div class="avatar me-3">
-                                    <a href="#!"> <img class="avatar-img rounded-circle"
-                                            src="assets/images/logo/09.svg" alt=""> </a>
-                                </div>
-                                <!-- Info -->
-                                <div>
-                                    <h6 class="card-title mb-0"><a href="#!"> Microsoft Corporation </a></h6>
-                                    <p class="small">May 2017 – Present Employment Duration 1 yrs 5 mos <a
-                                            class="btn btn-primary-soft btn-xs ms-2" href="#!">Edit </a></p>
-                                </div>
-                            </div>
-                            <!-- Experience item END -->
-
-                            <!-- Experience item START -->
-                            <div class="d-flex">
-                                <!-- Avatar -->
-                                <div class="avatar me-3">
-                                    <a href="#!"> <img class="avatar-img rounded-circle"
-                                            src="assets/images/logo/10.svg" alt=""> </a>
-                                </div>
-                                <!-- Info -->
-                                <div>
-                                    <h6 class="card-title mb-0"><a href="#!"> Tata Consultancy Services. </a></h6>
-                                    <p class="small mb-0">May 2022 – Present Employment Duration 6 yrs 10 mos <a
-                                            class="btn btn-primary-soft btn-xs ms-2" href="#!">Edit </a></p>
-                                </div>
-                            </div>
-                            <!-- Experience item END -->
 
                         </div>
                         <!-- Card body END -->
@@ -254,37 +230,17 @@
                         <!-- Card body START -->
                         <div class="card-body position-relative pt-0">
                             <div class="row g-2">
-                                <!-- Photos item -->
-                                <div class="col-6">
-                                    <a href="assets/images/albums/01.jpg" data-gallery="image-popup" data-glightbox="">
-                                        <img class="rounded img-fluid" src="assets/images/albums/01.jpg" alt="">
-                                    </a>
-                                </div>
-                                <!-- Photos item -->
-                                <div class="col-6">
-                                    <a href="assets/images/albums/02.jpg" data-gallery="image-popup" data-glightbox="">
-                                        <img class="rounded img-fluid" src="assets/images/albums/02.jpg" alt="">
-                                    </a>
-                                </div>
-                                <!-- Photos item -->
-                                <div class="col-4">
-                                    <a href="assets/images/albums/03.jpg" data-gallery="image-popup" data-glightbox="">
-                                        <img class="rounded img-fluid" src="assets/images/albums/03.jpg" alt="">
-                                    </a>
-                                </div>
-                                <!-- Photos item -->
-                                <div class="col-4">
-                                    <a href="assets/images/albums/04.jpg" data-gallery="image-popup" data-glightbox="">
-                                        <img class="rounded img-fluid" src="assets/images/albums/04.jpg" alt="">
-                                    </a>
-                                </div>
-                                <!-- Photos item -->
-                                <div class="col-4">
-                                    <a href="assets/images/albums/05.jpg" data-gallery="image-popup" data-glightbox="">
-                                        <img class="rounded img-fluid" src="assets/images/albums/05.jpg" alt="">
-                                    </a>
-                                    <!-- glightbox Albums left bar END  -->
-                                </div>
+                                @forelse ($photoMedia as $media)
+                                    <div class="{{ $loop->index < 2 ? 'col-6' : 'col-4' }}">
+                                        <a href="{{ asset($media->file_path) }}" data-gallery="image-popup" data-glightbox="">
+                                            <img class="rounded img-fluid" src="{{ asset($media->file_path) }}" alt="Post photo">
+                                        </a>
+                                    </div>
+                                @empty
+                                    <div class="col-12 text-muted small">
+                                        No photos yet.
+                                    </div>
+                                @endforelse
                             </div>
                         </div>
                         <!-- Card body END -->
@@ -298,7 +254,7 @@
                         <!-- Card header START -->
                         <div class="card-header d-sm-flex justify-content-between align-items-center border-0">
                             <h5 class="card-title">Friends <span
-                                    class="badge bg-danger bg-opacity-10 text-danger">230</span></h5>
+                                    class="badge bg-danger bg-opacity-10 text-danger">{{ $followersList->count() }}</span></h5>
                             <a class="btn btn-primary-soft btn-sm" href="#!"> See all friends</a>
                         </div>
                         <!-- Card header END -->
@@ -306,105 +262,44 @@
                         <div class="card-body position-relative pt-0">
                             <div class="row g-3">
 
-                                <div class="col-6">
-                                    <!-- Friends item START -->
-                                    <div class="card shadow-none text-center h-100">
-                                        <!-- Card body -->
-                                        <div class="card-body p-2 pb-0">
-                                            <div class="avatar avatar-story avatar-xl">
-                                                <a href="#!"><img class="avatar-img rounded-circle"
-                                                        src="assets/images/avatar/02.jpg" alt=""></a>
+                                @forelse ($friendsPreview as $friend)
+                                    <div class="col-6">
+                                        <!-- Friends item START -->
+                                        <div class="card shadow-none text-center h-100">
+                                            <!-- Card body -->
+                                            <div class="card-body p-2 pb-0">
+                                                <div class="avatar avatar-story avatar-xl">
+                                                    <a href="{{ route('user.profile', $friend->username) }}">
+                                                        <img class="avatar-img rounded-circle"
+                                                            src="{{ $friend->image ? asset('assets/images/users/' . $friend->image) : asset('assets/images/avatar/placeholder.jpg') }}"
+                                                            alt="">
+                                                    </a>
+                                                </div>
+                                                <h6 class="card-title mb-1 mt-3">
+                                                    <a href="{{ route('user.profile', $friend->username) }}">
+                                                        {{ $friend->first_name }} {{ $friend->last_name }}
+                                                    </a>
+                                                </h6>
+                                                <p class="mb-0 small lh-sm"><span data-followers-count data-user-id="{{ $friend->id }}">{{ $friend->followers()->count() }}</span> followers</p>
                                             </div>
-                                            <h6 class="card-title mb-1 mt-3"> <a href="#!"> Amanda Reed </a></h6>
-                                            <p class="mb-0 small lh-sm">16 mutual connections</p>
-                                        </div>
-                                        <!-- Card footer -->
-                                        <div class="card-footer p-2 border-0">
-                                            <button class="btn btn-sm btn-primary" data-bs-toggle="tooltip"
-                                                data-bs-placement="top" title="Send message"> <i
-                                                    class="bi bi-chat-left-text"></i> </button>
-                                            <button class="btn btn-sm btn-danger" data-bs-toggle="tooltip"
-                                                data-bs-placement="top" title="Remove friend"> <i
-                                                    class="bi bi-person-x"></i> </button>
-                                        </div>
-                                    </div>
-                                    <!-- Friends item END -->
-                                </div>
-
-                                <div class="col-6">
-                                    <!-- Friends item START -->
-                                    <div class="card shadow-none text-center h-100">
-                                        <!-- Card body -->
-                                        <div class="card-body p-2 pb-0">
-                                            <div class="avatar avatar-xl">
-                                                <a href="#!"><img class="avatar-img rounded-circle"
-                                                        src="assets/images/avatar/03.jpg" alt=""></a>
+                                            <!-- Card footer -->
+                                            <div class="card-footer p-2 border-0">
+                                                <button class="btn btn-sm btn-primary" data-bs-toggle="tooltip"
+                                                    data-bs-placement="top" title="Send message"> <i
+                                                        class="bi bi-chat-left-text"></i> </button>
+                                                <button class="btn btn-sm btn-danger" data-bs-toggle="tooltip"
+                                                    data-bs-placement="top" title="Remove friend"
+                                                    onclick="toggleFollow({{ $friend->id }}, this)"> <i
+                                                        class="bi bi-person-x"></i> </button>
                                             </div>
-                                            <h6 class="card-title mb-1 mt-3"> <a href="#!"> Samuel Bishop </a></h6>
-                                            <p class="mb-0 small lh-sm">22 mutual connections</p>
                                         </div>
-                                        <!-- Card footer -->
-                                        <div class="card-footer p-2 border-0">
-                                            <button class="btn btn-sm btn-primary" data-bs-toggle="tooltip"
-                                                data-bs-placement="top" title="Send message"> <i
-                                                    class="bi bi-chat-left-text"></i> </button>
-                                            <button class="btn btn-sm btn-danger" data-bs-toggle="tooltip"
-                                                data-bs-placement="top" title="Remove friend"> <i
-                                                    class="bi bi-person-x"></i> </button>
-                                        </div>
+                                        <!-- Friends item END -->
                                     </div>
-                                    <!-- Friends item END -->
-                                </div>
-
-                                <div class="col-6">
-                                    <!-- Friends item START -->
-                                    <div class="card shadow-none text-center h-100">
-                                        <!-- Card body -->
-                                        <div class="card-body p-2 pb-0">
-                                            <div class="avatar avatar-xl">
-                                                <a href="#!"><img class="avatar-img rounded-circle"
-                                                        src="assets/images/avatar/04.jpg" alt=""></a>
-                                            </div>
-                                            <h6 class="card-title mb-1 mt-3"> <a href="#"> Bryan Knight </a></h6>
-                                            <p class="mb-0 small lh-sm">1 mutual connection</p>
-                                        </div>
-                                        <!-- Card footer -->
-                                        <div class="card-footer p-2 border-0">
-                                            <button class="btn btn-sm btn-primary" data-bs-toggle="tooltip"
-                                                data-bs-placement="top" title="Send message"> <i
-                                                    class="bi bi-chat-left-text"></i> </button>
-                                            <button class="btn btn-sm btn-danger" data-bs-toggle="tooltip"
-                                                data-bs-placement="top" title="Remove friend"> <i
-                                                    class="bi bi-person-x"></i> </button>
-                                        </div>
+                                @empty
+                                    <div class="col-12 text-muted small">
+                                        No friends yet.
                                     </div>
-                                    <!-- Friends item END -->
-                                </div>
-
-                                <div class="col-6">
-                                    <!-- Friends item START -->
-                                    <div class="card shadow-none text-center h-100">
-                                        <!-- Card body -->
-                                        <div class="card-body p-2 pb-0">
-                                            <div class="avatar avatar-xl">
-                                                <a href="#!"><img class="avatar-img rounded-circle"
-                                                        src="assets/images/avatar/05.jpg" alt=""></a>
-                                            </div>
-                                            <h6 class="card-title mb-1 mt-3"> <a href="#!"> Amanda Reed </a></h6>
-                                            <p class="mb-0 small lh-sm">15 mutual connections</p>
-                                        </div>
-                                        <!-- Card footer -->
-                                        <div class="card-footer p-2 border-0">
-                                            <button class="btn btn-sm btn-primary" data-bs-toggle="tooltip"
-                                                data-bs-placement="top" title="Send message"> <i
-                                                    class="bi bi-chat-left-text"></i> </button>
-                                            <button class="btn btn-sm btn-danger" data-bs-toggle="tooltip"
-                                                data-bs-placement="top" title="Remove friend"> <i
-                                                    class="bi bi-person-x"></i> </button>
-                                        </div>
-                                    </div>
-                                    <!-- Friends item END -->
-                                </div>
+                                @endforelse
 
                             </div>
                         </div>
@@ -428,280 +323,17 @@
         </div>
     </div>
 
-    {{-- <!-- Modal create Feed START -->
-<div class="modal fade" id="modalCreateFeed" tabindex="-1" aria-labelledby="modalLabelCreateFeed" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content">
-      <!-- Modal feed header START -->
-      <div class="modal-header">
-        <h5 class="modal-title" id="modalLabelCreateFeed">Create post</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <!-- Modal feed header END -->
-
-      <!-- Modal feed body START -->
-      <div class="modal-body">
-         <!-- Add Feed -->
-         <div class="d-flex mb-3">
-          <!-- Avatar -->
-          <div class="avatar avatar-xs me-2">
-            <img class="avatar-img rounded-circle" src="assets/images/avatar/03.jpg" alt="">
-          </div>
-          <!-- Feed box  -->
-          <form class="w-100">
-            <textarea class="form-control pe-4 fs-3 lh-1 border-0" rows="4" placeholder="Share your thoughts..." autofocus></textarea>
-          </form>
-        </div>
-        <!-- Feed rect START -->
-        <div class="hstack gap-2">
-          <a class="icon-md bg-success bg-opacity-10 text-success rounded-circle" href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="Photo"> <i class="bi bi-image-fill"></i> </a>
-          <a class="icon-md bg-info bg-opacity-10 text-info rounded-circle" href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="Video"> <i class="bi bi-camera-reels-fill"></i> </a>
-          <a class="icon-md bg-danger bg-opacity-10 text-danger rounded-circle" href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="Events"> <i class="bi bi-calendar2-event-fill"></i> </a>
-          <a class="icon-md bg-warning bg-opacity-10 text-warning rounded-circle" href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="Feeling/Activity"> <i class="bi bi-emoji-smile-fill"></i> </a>
-          <a class="icon-md bg-light text-secondary rounded-circle" href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="Check in"> <i class="bi bi-geo-alt-fill"></i> </a>
-          <a class="icon-md bg-primary bg-opacity-10 text-primary rounded-circle" href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="Tag people on top"> <i class="bi bi-tag-fill"></i> </a>
-        </div>
-        <!-- Feed rect END -->
-      </div>
-      <!-- Modal feed body END -->
-      
-      <!-- Modal feed footer -->
-      <div class="modal-footer row justify-content-between">
-        <!-- Select -->
-        <div class="col-lg-3">
-          <select class="form-select js-choice" data-position="top" data-search-enabled="false">
-            <option value="PB">Public</option>
-            <option value="PV">Friends</option>
-            <option value="PV">Only me</option>
-            <option value="PV">Custom</option>
-          </select>
-        </div>
-        <!-- Button -->
-        <div class="col-lg-8 text-sm-end">
-          <button type="button" class="btn btn-danger-soft me-2"> <i class="bi bi-camera-video-fill pe-1"></i> Live video</button>
-          <button type="button" class="btn btn-success-soft">Post</button>
-        </div>
-      </div>
-      <!-- Modal feed footer -->
-
-    </div>
-  </div>
-</div>
-<!-- Modal create feed END -->
-
-<!-- Modal create Feed photo START -->
-<div class="modal fade" id="feedActionPhoto" tabindex="-1" aria-labelledby="feedActionPhotoLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <!-- Modal feed header START -->
-      <div class="modal-header">
-        <h5 class="modal-title" id="feedActionPhotoLabel">Add post photo</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <!-- Modal feed header END -->
-
-        <!-- Modal feed body START -->
-        <div class="modal-body">
-        <!-- Add Feed -->
-        <div class="d-flex mb-3">
-          <!-- Avatar -->
-          <div class="avatar avatar-xs me-2">
-            <img class="avatar-img rounded-circle" src="assets/images/avatar/03.jpg" alt="">
-          </div>
-          <!-- Feed box  -->
-          <form class="w-100">
-            <textarea class="form-control pe-4 fs-3 lh-1 border-0" rows="2" placeholder="Share your thoughts..."></textarea>
-          </form>
-        </div>
-
-        <!-- Dropzone photo START -->
-        <div>
-          <label class="form-label">Upload attachment</label>
-          <div class="dropzone dropzone-default card shadow-none" data-dropzone='{"maxFiles":2}'>
-            <div class="dz-message">
-              <i class="bi bi-images display-3"></i>
-              <p>Drag here or click to upload photo.</p>
-            </div>
-          </div>
-        </div>
-        <!-- Dropzone photo END -->
-
-        </div>
-        <!-- Modal feed body END -->
-
-        <!-- Modal feed footer -->
-        <div class="modal-footer ">
-          <!-- Button -->
-            <button type="button" class="btn btn-danger-soft me-2" data-bs-dismiss="modal">Cancel</button>
-            <button type="button" class="btn btn-success-soft">Post</button>
-        </div>
-        <!-- Modal feed footer -->
-    </div>
-  </div>
-</div>
-<!-- Modal create Feed photo END -->
-
-<!-- Modal create Feed video START -->
-<div class="modal fade" id="feedActionVideo" tabindex="-1" aria-labelledby="feedActionVideoLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-     <!-- Modal feed header START -->
-     <div class="modal-header">
-      <h5 class="modal-title" id="feedActionVideoLabel">Add post video</h5>
-      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-    </div>
-    <!-- Modal feed header END -->
-
-      <!-- Modal feed body START -->
-      <div class="modal-body">
-       <!-- Add Feed -->
-       <div class="d-flex mb-3">
-        <!-- Avatar -->
-        <div class="avatar avatar-xs me-2">
-          <img class="avatar-img rounded-circle" src="assets/images/avatar/03.jpg" alt="">
-        </div>
-        <!-- Feed box  -->
-        <form class="w-100">
-          <textarea class="form-control pe-4 fs-3 lh-1 border-0" rows="2" placeholder="Share your thoughts..."></textarea>
-        </form>
-      </div>
-
-      <!-- Dropzone photo START -->
-      <div>
-        <label class="form-label">Upload attachment</label>
-        <div class="dropzone dropzone-default card shadow-none" data-dropzone='{"maxFiles":2}'>
-          <div class="dz-message">
-            <i class="bi bi-camera-reels display-3"></i>
-                <p>Drag here or click to upload video.</p>
-          </div>
-        </div>
-      </div>
-      <!-- Dropzone photo END -->
-
-    </div>
-      <!-- Modal feed body END -->
-
-      <!-- Modal feed footer -->
-      <div class="modal-footer">
-        <!-- Button -->
-        <button type="button" class="btn btn-danger-soft me-2"><i class="bi bi-camera-video-fill pe-1"></i> Live video</button>
-        <button type="button" class="btn btn-success-soft">Post</button>
-      </div>
-      <!-- Modal feed footer -->
-    </div>
-  </div>
-</div>
-<!-- Modal create Feed video END -->
-
-<!-- Modal create events START -->
-<div class="modal fade" id="modalCreateEvents" tabindex="-1" aria-labelledby="modalLabelCreateAlbum" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <!-- Modal feed header START -->
-      <div class="modal-header">
-        <h5 class="modal-title" id="modalLabelCreateAlbum">Create event</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <!-- Modal feed header END -->
-      <!-- Modal feed body START -->
-      <div class="modal-body">
-        <!-- Form START -->
-        <form class="row g-4">
-          <!-- Title -->
-          <div class="col-12">
-            <label class="form-label">Title</label>
-            <input type="email" class="form-control" placeholder="Event name here">
-          </div>
-          <!-- Description -->
-          <div class="col-12">
-            <label class="form-label">Description</label>
-            <textarea class="form-control" rows="2" placeholder="Ex: topics, schedule, etc."></textarea>
-          </div>
-          <!-- Date -->
-          <div class="col-sm-4">
-            <label class="form-label">Date</label>
-            <input type="text" class="form-control flatpickr" placeholder="Select date">
-          </div>
-          <!-- Time -->
-          <div class="col-sm-4">
-            <label class="form-label">Time</label>
-            <input type="text" class="form-control flatpickr" data-enableTime="true" data-noCalendar="true" placeholder="Select time">
-          </div>
-          <!-- Duration -->
-          <div class="col-sm-4">
-            <label class="form-label">Duration</label>
-            <input type="email" class="form-control" placeholder="1hr 23m">
-          </div>
-          <!-- Location -->
-          <div class="col-12">
-            <label class="form-label">Location</label>
-            <input type="email" class="form-control" placeholder="Logansport, IN 46947">
-          </div>
-          <!-- Add guests -->
-          <div class="col-12">
-            <label class="form-label">Add guests</label>
-            <input type="email" class="form-control" placeholder="Guest email">
-          </div>
-          <!-- Avatar group START -->
-          <div class="col-12 mt-3">
-            <ul class="avatar-group list-unstyled align-items-center mb-0">
-              <li class="avatar avatar-xs">
-                <img class="avatar-img rounded-circle" src="assets/images/avatar/01.jpg" alt="avatar">
-              </li>
-              <li class="avatar avatar-xs">
-                <img class="avatar-img rounded-circle" src="assets/images/avatar/02.jpg" alt="avatar">
-              </li>
-              <li class="avatar avatar-xs">
-                <img class="avatar-img rounded-circle" src="assets/images/avatar/03.jpg" alt="avatar">
-              </li>
-              <li class="avatar avatar-xs">
-                <img class="avatar-img rounded-circle" src="assets/images/avatar/04.jpg" alt="avatar">
-              </li>
-              <li class="avatar avatar-xs">
-                <img class="avatar-img rounded-circle" src="assets/images/avatar/05.jpg" alt="avatar">
-              </li>
-              <li class="avatar avatar-xs">
-                <img class="avatar-img rounded-circle" src="assets/images/avatar/06.jpg" alt="avatar">
-              </li>
-              <li class="avatar avatar-xs">
-                <img class="avatar-img rounded-circle" src="assets/images/avatar/07.jpg" alt="avatar">
-              </li>
-              <li class="ms-3">
-                <small> +50 </small>
-              </li>
-            </ul>
-          </div>
-          <!-- Upload Photos or Videos -->
-          <!-- Dropzone photo START -->
-          <div>
-            <label class="form-label">Upload attachment</label>
-            <div class="dropzone dropzone-default card shadow-none" data-dropzone='{"maxFiles":2}'>
-              <div class="dz-message">
-                <i class="bi bi-file-earmark-text display-3"></i>
-                <p>Drop presentation and document here or click to upload.</p>
-              </div>
-            </div>
-          </div>
-          <!-- Dropzone photo END -->
-        </form>
-        <!-- Form END -->
-      </div>
-      <!-- Modal feed body END -->
-      <!-- Modal footer -->
-      <!-- Button -->
-      <div class="modal-footer">
-        <button type="button" class="btn btn-danger-soft me-2" data-bs-dismiss="modal"> Cancel</button>
-        <button type="button" class="btn btn-success-soft">Create now</button>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- Modal create events END --> --}}
+    @include('main.modals.homeModals.postEditModal')
 
 @endsection
 @section('script')
 
     <script>
+        let tempDeletedImages = [];
+        let tempDeletedVideos = [];
+        let tempReplacedImages = {};
+        let tempReplacedVideos = {};
+
         document.addEventListener('DOMContentLoaded', function() {
 
             const sections = document.querySelectorAll('.profile-section');
@@ -896,37 +528,7 @@
             });
         });
 
-        let postModal;
-        let commentsModal;
-
-        function openPostModal(postId) {
-            const modalEl = document.getElementById('postModal');
-            if (!postModal && modalEl) {
-                postModal = new bootstrap.Modal(modalEl);
-            }
-
-            fetch(`/posts/${postId}/preview`)
-                .then(res => res.json())
-                .then(data => {
-                    const body = document.getElementById('postModalBody');
-                    if (!body || !data.html) return;
-
-                    body.innerHTML = data.html;
-
-                    // Initialize media sliders inside the loaded post
-                    if (typeof initSliders === 'function') {
-                        initSliders();
-                    }
-
-                    const commentsEl = document.getElementById('commentsModal');
-                    if (commentsEl) {
-                        commentsModal = new bootstrap.Modal(commentsEl);
-                    }
-
-                    postModal && postModal.show();
-                })
-                .catch(err => console.error('Post preview failed:', err));
-        }
+        
 
         function openCommentsModal(postId) {
             if (!commentsModal) {
@@ -1091,5 +693,337 @@
                 })
                 .catch(err => console.error('Like toggle failed:', err));
         }
+
+        window.editPost = function(postId) {
+            tempDeletedImages = [];
+            tempDeletedVideos = [];
+            tempReplacedImages = {};
+            tempReplacedVideos = {};
+
+            fetch(`/posts/${postId}/edit`)
+                .then(res => res.json())
+                .then(data => {
+                    const post = data.post;
+
+                    const postIdInput = document.getElementById('edit_post_id');
+                    const captionInput = document.getElementById('edit_caption');
+                    const imageSection = document.getElementById('editImageSection');
+                    const videoSection = document.getElementById('editVideoSection');
+                    const imageContainer = document.getElementById('editPostImage');
+                    const videoContainer = document.getElementById('editPostVideo');
+
+                    if (!postIdInput || !captionInput || !imageSection || !videoSection || !imageContainer ||
+                        !videoContainer) {
+                        return;
+                    }
+
+                    postIdInput.value = post.id;
+                    captionInput.value = post.caption || '';
+
+                    imageSection.classList.add('d-none');
+                    videoSection.classList.add('d-none');
+                    imageContainer.innerHTML = '';
+                    videoContainer.innerHTML = '';
+
+                    if (post.images && post.images.length > 0) {
+                        imageSection.classList.remove('d-none');
+                        post.images.forEach(image => {
+                            imageContainer.innerHTML += `
+                        <div class="col-4" id="image-${image.id}">
+                            <div class="card position-relative">
+                                <img src="/${image.file_path}" class="img-fluid rounded">
+                                <button type="button"
+                                    class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1"
+                                    onclick="deleteImage(event, ${image.id})">x</button>
+
+                                <button type="button"
+                                    class="btn btn-secondary btn-sm position-absolute bottom-0 end-0 m-1"
+                                    onclick="triggerFile(${image.id})">edit</button>
+
+                                <input type="file"
+                                    class="d-none"
+                                    id="file-${image.id}"
+                                    onchange="replaceImage(${image.id}, this)">
+                            </div>
+                        </div>`;
+                        });
+                    }
+
+                    if (post.videos && post.videos.length > 0) {
+                        videoSection.classList.remove('d-none');
+                        post.videos.forEach(video => {
+                            videoContainer.innerHTML += `
+                        <div class="col-6" id="video-${video.id}">
+                            <div class="card position-relative">
+                                <video controls class="w-100 rounded">
+                                    <source src="/${video.file_path}" type="video/mp4">
+                                </video>
+                                <button type="button"
+                                    class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1"
+                                    onclick="deleteVideo(event, ${video.id})">x</button>
+                                <button type="button"
+                                    class="btn btn-secondary btn-sm position-absolute bottom-0 end-0 m-1"
+                                    onclick="triggerVideoFile(${video.id})">edit</button>
+                                <input type="file"
+                                    accept="video/*"
+                                    class="d-none"
+                                    id="video-file-${video.id}"
+                                    onchange="replaceVideo(${video.id}, this)">
+                            </div>
+                        </div>`;
+                        });
+                    }
+
+                    const modal = document.getElementById('modalEditPost');
+                    if (modal) {
+                        new bootstrap.Modal(modal).show();
+                    }
+                })
+                .catch(err => console.error(err));
+        };
+
+        window.deletePost = function(postId) {
+            if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) return;
+
+            fetch(`/posts/${postId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const postEl = document.getElementById(`post-${postId}`);
+                        if (postEl) {
+                            postEl.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                            postEl.style.opacity = '0';
+                            postEl.style.transform = 'scale(0.95)';
+                            setTimeout(() => postEl.remove(), 400);
+                        }
+                    } else {
+                        alert(data.message || 'Something went wrong.');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Server error. Could not delete post.');
+                });
+        };
+
+        window.updatePost = function() {
+            const postId = document.getElementById('edit_post_id')?.value;
+            const caption = document.getElementById('edit_caption')?.value || '';
+            if (!postId) return;
+
+            const formData = new FormData();
+            formData.append('caption', caption);
+
+            tempDeletedImages.forEach(id => formData.append('deleted_images[]', id));
+            tempDeletedVideos.forEach(id => formData.append('deleted_videos[]', id));
+
+            for (const id in tempReplacedImages) {
+                formData.append(`replaced_images[${id}]`, tempReplacedImages[id]);
+            }
+            for (const id in tempReplacedVideos) {
+                formData.append(`replaced_videos[${id}]`, tempReplacedVideos[id]);
+            }
+
+            fetch(`/posts/${postId}/update-modal`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) return;
+
+                    const postCard = document.querySelector(`#post-${postId}`);
+                    if (!postCard) return;
+
+                    const captionEl = postCard.querySelector('.post-caption');
+                    if (captionEl) captionEl.innerText = caption;
+
+                    const mediaContainer = postCard.querySelector(`#post-media-${postId}`);
+                    if (!mediaContainer) return;
+
+                    const media = [
+                        ...(data.images || []).map(i => ({
+                            type: 'image',
+                            url: i.url
+                        })),
+                        ...(data.videos || []).map(v => ({
+                            type: 'video',
+                            url: v.url
+                        }))
+                    ];
+
+                    let newHtml = '';
+                    if (media.length > 1) {
+                        newHtml = `<div class="insta-slider">
+                            <div class="insta-track">
+                                ${media.map(item => `
+                                    <div class="insta-slide">
+                                        ${item.type === 'image'
+                                            ? `<img src="${item.url}" class="w-100 rounded">`
+                                            : `<video controls class="w-100 rounded"><source src="${item.url}"></video>`}
+                                    </div>`).join('')}
+                            </div>
+                            <button class="insta-btn prev">&lt;</button>
+                            <button class="insta-btn next">&gt;</button>
+                        </div>`;
+                    } else if (media.length === 1) {
+                        const item = media[0];
+                        newHtml = item.type === 'image' ?
+                            `<img src="${item.url}" class="img-fluid rounded w-100">` :
+                            `<video controls class="w-100 rounded"><source src="${item.url}"></video>`;
+                    } else {
+                        newHtml = `<div class="text-muted text-center py-4">No media available</div>`;
+                    }
+
+                    mediaContainer.innerHTML = newHtml;
+                    if (media.length > 1) {
+                        const newSlider = mediaContainer.querySelector('.insta-slider');
+                        if (newSlider) {
+                            delete newSlider.dataset.initialized;
+                            initSliders();
+                        }
+                    }
+
+                    bootstrap.Modal.getInstance(document.getElementById('modalEditPost'))?.hide();
+                })
+                .catch(err => console.error('Update failed:', err));
+        };
+
+        window.deleteImage = function(e, imageId) {
+            e.preventDefault();
+            tempDeletedImages.push(imageId);
+            document.getElementById(`image-${imageId}`)?.remove();
+        };
+
+        window.triggerFile = function(imageId) {
+            document.getElementById(`file-${imageId}`)?.click();
+        };
+
+        window.replaceImage = function(imageId, input) {
+            if (!input.files.length) return;
+            tempReplacedImages[imageId] = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.querySelector(`#image-${imageId} img`);
+                if (img) img.src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        };
+
+        window.deleteVideo = function(e, videoId) {
+            e.preventDefault();
+            tempDeletedVideos.push(videoId);
+            document.getElementById(`video-${videoId}`)?.remove();
+        };
+
+        window.triggerVideoFile = function(videoId) {
+            document.getElementById(`video-file-${videoId}`)?.click();
+        };
+
+        window.replaceVideo = function(videoId, input) {
+            if (!input.files.length) return;
+            const file = input.files[0];
+            tempReplacedVideos[videoId] = file;
+
+            const videoURL = URL.createObjectURL(file);
+            const source = document.querySelector(`#video-${videoId} video source`);
+            const video = document.querySelector(`#video-${videoId} video`);
+            if (source && video) {
+                source.setAttribute('src', videoURL);
+                video.load();
+            }
+        };
+
+        window.toggleFollow = function(userId, btn) {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+            fetch(`/follow/${userId}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status !== 'success') return;
+
+                    if (window.updateFollowButton) {
+                        window.updateFollowButton(btn, data.following);
+                    }
+                    if (window.updateFollowCounts) {
+                        window.updateFollowCounts(data);
+                    }
+
+                    if (btn && btn.classList.contains('btn-danger-soft') && !data.following) {
+                        const row = btn.closest('.d-md-flex');
+                        if (row) {
+                            row.style.transition = 'opacity 0.3s';
+                            row.style.opacity = '0';
+                            setTimeout(() => row.remove(), 300);
+                        }
+                    }
+                })
+                .catch(err => console.error('Follow toggle failed:', err));
+        };
+
+        let postModal;
+let commentsModal;
+
+window.openPostModal = function(postId) {
+    const modalEl = document.getElementById('postModal');
+    const body = document.getElementById('postModalBody');
+
+    if (!modalEl) return;
+
+    if (!postModal) {
+        postModal = new bootstrap.Modal(modalEl);
+    }
+
+    if (body) {
+        body.innerHTML = '<div class="p-4 text-center">Loading post...</div>';
+    }
+
+    postModal.show();
+
+    fetch(`/posts/${postId}/preview`, {
+            headers: {
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.json();
+        })
+        .then(data => {
+            if (!body) return;
+
+            body.innerHTML = data.html || '<div class="p-4 text-center">Post preview not available.</div>';
+
+            if (typeof initSliders === 'function') {
+                initSliders();
+            }
+
+            const commentsEl = document.getElementById('commentsModal');
+            if (commentsEl) {
+                commentsModal = new bootstrap.Modal(commentsEl);
+            }
+        })
+        .catch(err => {
+            if (body) {
+                body.innerHTML = '<div class="alert alert-danger m-3">Error loading post details.</div>';
+            }
+            console.error('Post preview failed:', err);
+        });
+}
     </script>
 @endsection

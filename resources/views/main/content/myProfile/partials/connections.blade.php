@@ -24,7 +24,7 @@
                     <ul class="avatar-group mt-1 list-unstyled align-items-sm-center">
                         <li class="small">
                             {{-- Assuming you have a mutual count logic, otherwise show total followers --}}
-                            {{ $follower->followers()->count() }} followers
+                            <span data-followers-count data-user-id="{{ $follower->id }}">{{ $follower->followers()->count() }}</span> followers
                         </li>
                     </ul>
                 </div>
@@ -45,73 +45,3 @@
     </div>
 </div>
 
-@section('script') 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
-
-<script>
-  $(document).ready(function() {
-    // Check if a specific section was passed from the controller
-    const activeSection = "{{ $section ?? 'about' }}";
-    showSection(activeSection);
-
-    $('.nav-link').on('click', function(e) {
-        // Get the ID from href (e.g., #connections)
-        const targetId = $(this).attr('href').substring(1);
-        
-        if (['about', 'posts', 'connections'].includes(targetId)) {
-            e.preventDefault();
-            showSection(targetId);
-            
-            // Update URL hash without refreshing
-            window.location.hash = targetId;
-        }
-    });
-
-    function showSection(sectionId) {
-    // 1. Hide all sections
-    $('.profile-section').addClass('d-none');
-    
-    // 2. Show the specific section
-    $('#' + sectionId).removeClass('d-none');
-    
-    // 3. Handle Navigation styling
-    $('.nav-link').removeClass('active');
-    // This finds the link by the hash in the href
-    $(`.nav-link[href="#${sectionId}"]`).addClass('active');
-    
-    // 4. Handle "Connections" data load if necessary
-    if (sectionId === 'connections') {
-        console.log("Connections tab active");
-    }
-}
-
-function toggleFollow(userId, btn) {
-    const csrfToken = $('meta[name="csrf-token"]').attr('content');
-
-    $.ajax({
-        url: `/follow/${userId}`,
-        method: 'POST',
-        data: {
-            _token: csrfToken
-        },
-        success: function(response) {
-            // If we are on our own "Connections" page, we usually want to remove the row
-            $(btn).closest('.d-md-flex').fadeOut(300, function() {
-                $(this).remove();
-                
-                // Optional: Update the badge count in the tab
-                let badge = $('.nav-link[href="#connections"] .badge');
-                let currentCount = parseInt(badge.text());
-                badge.text(currentCount - 1);
-            });
-        },
-        error: function(err) {
-            console.error("Follow toggle failed", err);
-        }
-    });
-}
-});
-</script>
-
-@endsection

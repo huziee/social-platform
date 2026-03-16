@@ -16,29 +16,44 @@ class MyAccountController extends Controller
             ->get();
     }
 
+    protected function getSavedPosts()
+    {
+        return auth()->user()
+            ->savedPosts()
+            ->with(['media', 'user', 'likes', 'comments.user'])
+            ->orderByPivot('created_at', 'desc')
+            ->get();
+    }
+
     public function index()
     {
         $posts = $this->getUserPosts();
+        $savedPosts = $this->getSavedPosts();
 
         // Add this line to fetch followers for the connections partial
     $followers = auth()->user()->followers()->with('followers')->get();
 
-        return view('main.content.myProfile.index', compact('posts', 'followers'));
+        return view('main.content.myProfile.index', compact('posts', 'followers', 'savedPosts'));
     }
 
     public function posts()
     {
         $posts = $this->getUserPosts();
+        $savedPosts = $this->getSavedPosts();
+        $followers = auth()->user()->followers()->with('followers')->get();
 
         return view('main.content.myProfile.index', [
             'section' => 'posts',
             'posts' => $posts,
+            'followers' => $followers,
+            'savedPosts' => $savedPosts,
         ]);
     }
 
     public function connections()
 {
     $posts = $this->getUserPosts();
+    $savedPosts = $this->getSavedPosts();
     // Fetch the authenticated user's followers
     $followers = auth()->user()->followers()->with('followers')->get();
 
@@ -46,16 +61,21 @@ class MyAccountController extends Controller
         'section' => 'connections',
         'posts' => $posts,
         'followers' => $followers, // Pass this to the view
+        'savedPosts' => $savedPosts,
     ]);
 }
 
     public function about()
     {
         $posts = $this->getUserPosts();
+        $savedPosts = $this->getSavedPosts();
+        $followers = auth()->user()->followers()->with('followers')->get();
 
         return view('main.content.myProfile.index', [
             'section' => 'about',
             'posts' => $posts,
+            'followers' => $followers,
+            'savedPosts' => $savedPosts,
         ]);
     }
 

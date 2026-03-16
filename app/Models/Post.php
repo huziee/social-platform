@@ -50,5 +50,15 @@ public function isLikedByAuth()
     return $this->likes()->where('user_id', auth()->id())->exists();
 }
 
+public function savedBy()
+{
+    return $this->belongsToMany(User::class, 'saved_posts')->withTimestamps();
+}
+
+public function isSavedByAuth()
+{
+    return $this->savedBy()->where('user_id', auth()->id())->exists();
+}
+
 
 }

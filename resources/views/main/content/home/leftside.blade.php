@@ -47,14 +47,14 @@
                             <div class="vr"></div>
                             <!-- User stat item -->
                             <div>
-                                <h6 class="mb-0">{{ Auth::user()->followers()->count() }}</h6>
+                                <h6 class="mb-0" data-followers-count data-user-id="{{ Auth::id() }}">{{ Auth::user()->followers()->count() }}</h6>
                                 <small>Followers</small>
                             </div>
                             <!-- Divider -->
                             <div class="vr"></div>
                             <!-- User stat item -->
                             <div>
-                                <h6 class="mb-0">{{ Auth::user()->following()->count() }}</h6>
+                                <h6 class="mb-0" data-following-count data-user-id="{{ Auth::id() }}">{{ Auth::user()->following()->count() }}</h6>
                                 <small>Following</small>
                             </div>
                         </div>

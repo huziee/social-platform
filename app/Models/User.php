@@ -107,4 +107,9 @@ public function messagesSent()
 {
     return $this->hasMany(Message::class, 'sender_id');
 }
+
+public function savedPosts()
+{
+    return $this->belongsToMany(Post::class, 'saved_posts')->withTimestamps();
+}
 }

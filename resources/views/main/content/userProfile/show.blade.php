@@ -173,7 +173,7 @@
                                 onclick="toggleFollow({{ $user->id }}, this)">
                                 {{ $isFollowing ? 'Following' : 'Follow' }}
                             </button>
-                            <a href="{{ route('home.chat') }}" class="btn btn-sm btn-outline-primary px-3"><i
+                            <a href="{{ route('messages.index') }}" class="btn btn-sm btn-outline-primary px-3"><i
                                     class="bi bi-envelope"></i></a>
                         </div>
                     </div>
@@ -182,11 +182,11 @@
                             <h6 class="mb-0">{{ $posts->count() }}</h6><small>Posts</small>
                         </div>
                         <div>
-                            <h6 class="mb-0" id="follower-count">{{ $user->followers()->count() }}</h6>
+                            <h6 class="mb-0" id="follower-count" data-followers-count data-user-id="{{ $user->id }}">{{ $user->followers()->count() }}</h6>
                             <small>Followers</small>
                         </div>
                         <div>
-                            <h6 class="mb-0">{{ $user->following()->count() }}</h6><small>Following</small>
+                            <h6 class="mb-0" id="following-count" data-following-count data-user-id="{{ $user->id }}">{{ $user->following()->count() }}</h6><small>Following</small>
                         </div>
                     </div>
                 </div>
@@ -491,7 +491,6 @@
          */
         function toggleFollow(userId, btn) {
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-            const followerCountEl = document.getElementById('follower-count');
 
             fetch(`/follow/${userId}`, {
                     method: 'POST',
@@ -503,18 +502,14 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    // Update Button Style
-                    if (data.following) {
-                        btn.innerText = 'Following';
-                        btn.classList.replace('btn-primary', 'btn-secondary');
-                    } else {
-                        btn.innerText = 'Follow';
-                        btn.classList.replace('btn-secondary', 'btn-primary');
-                    }
+                    if (data.status !== 'success') return;
 
-                    // Update the count number dynamically
-                    if (data.follower_count !== undefined) {
-                        followerCountEl.innerText = data.follower_count;
+                    btn.innerText = data.following ? 'Following' : 'Follow';
+                    btn.classList.toggle('btn-primary', !data.following);
+                    btn.classList.toggle('btn-secondary', data.following);
+
+                    if (window.updateFollowCounts) {
+                        window.updateFollowCounts(data);
                     }
                 })
                 .catch(error => console.error('Error:', error));

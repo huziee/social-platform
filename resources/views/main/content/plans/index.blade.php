@@ -7,8 +7,30 @@
 <div class="card bg-dark border-secondary">
     <div class="card-body p-4">
         <div class="text-center mb-4">
+            
+           @if(Auth::user()->is_subscribed)
+            <div class="py-5">
+                <div class="mb-3">
+                    <svg width="60" height="60" viewBox="0 0 24 24" fill="#0095F6">
+                        <path d="M10.5 1.75L12 0.25L13.5 1.75L15.42 1.45L16.25 3.12L18.12 3.58L18.25 5.5L19.85 6.6L19.25 8.42L20.35 10L19.25 11.58L19.85 13.4L18.25 14.5L18.12 16.42L16.25 16.88L15.42 18.55L13.5 18.25L12 19.75L10.5 18.25L8.58 18.55L7.75 16.88L5.88 16.42L5.75 14.5L4.15 13.4L4.75 11.58L3.65 10L4.75 8.42L4.15 6.6L5.75 5.5L5.88 3.58L7.75 3.12L8.58 1.45L10.5 1.75Z" />
+                        <path d="M8 10L11 13L16 8" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <h4 class="text-white">You are Verified!</h4>
+                <p class="text-secondary">Your {{ ucfirst(Auth::user()->plan_type) }} plan is active until {{ \Carbon\Carbon::parse(Auth::user()->subscription_ends_at)->format('M d, Y') }}.</p>
+                
+                <form action="{{ route('subscribe.cancel') }}" method="POST" onsubmit="return confirm('Are you sure you want to remove your blue tick?')">
+                    @csrf
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Cancel Subscription</button>
+                </form>
+            </div>
+        @else
             <h4 class="text-white">Get Verified</h4>
-            <p class="text-secondary small">Establish your presence and get exclusive features.</p>
+            <p class="text-secondary small">Choose a plan to get your blue tick.</p>
+            
+            <div class="row g-3 mt-2">
+                </div>
+        @endif
         </div>
 
         <div class="row g-3">
