@@ -32,9 +32,14 @@
                                 </div>
 
                                 <div class="col-sm-6 col-lg-4">
-                                    <label class="form-label">Image</label>
-                                    <input type="file" name="image" class="form-control" placeholder="image"
-                                        value="{{ old('image', Auth::user()->image) }}" accept="image/*">
+                                    <label class="form-label">Profile image</label>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img id="profileImagePreview" class="rounded border"
+                                            src="{{ Auth::user()->image ? asset('assets/images/users/' . Auth::user()->image) : asset('assets/images/avatar/07.jpg') }}"
+                                            alt="Profile image" style="width: 56px; height: 56px; object-fit: cover;">
+                                        <input type="file" name="image" class="form-control" accept="image/*"
+                                            id="profileImageInput">
+                                    </div>
                                 </div>
 
                                 <!-- Username -->
@@ -42,6 +47,17 @@
                                     <label class="form-label">User name</label>
                                     <input type="text" name="username" class="form-control"
                                         value="{{ old('username', Auth::user()->username) }}">
+                                </div>
+
+                                <div class="col-sm-6 col-lg-4">
+                                    <label class="form-label">Cover image</label>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img id="coverImagePreview" class="rounded border"
+                                            src="{{ Auth::user()->cover_image ? asset('assets/images/covers/' . Auth::user()->cover_image) : asset('assets/images/bg/05.jpg') }}"
+                                            alt="Cover image" style="width: 96px; height: 56px; object-fit: cover;">
+                                        <input type="file" name="cover_image" class="form-control" accept="image/*"
+                                            id="coverImageInput">
+                                    </div>
                                 </div>
 
                                 <!-- Birthday -->
@@ -63,6 +79,14 @@
                                     <label class="form-label">Email</label>
                                     <input type="email" name="email" class="form-control"
                                         value="{{ old('email', Auth::user()->email) }}">
+                                </div>
+
+                                <div class="col-sm-6 d-flex align-items-center">
+                                    <div class="form-check mt-3">
+                                        <input class="form-check-input" type="checkbox" id="is_private" name="is_private"
+                                            value="1" {{ old('is_private', Auth::user()->is_private) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="is_private">Private account</label>
+                                    </div>
                                 </div>
 
                                 <!-- Overview -->
@@ -131,3 +155,24 @@
                     </div> --}}
                     <!-- Card END -->
                 </div>
+
+                <script>
+                    (function() {
+                        const profileInput = document.getElementById('profileImageInput');
+                        const profilePreview = document.getElementById('profileImagePreview');
+                        const coverInput = document.getElementById('coverImageInput');
+                        const coverPreview = document.getElementById('coverImagePreview');
+
+                        function previewFile(input, img) {
+                            if (!input || !img || !input.files || !input.files[0]) return;
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                img.src = e.target.result;
+                            };
+                            reader.readAsDataURL(input.files[0]);
+                        }
+
+                        profileInput?.addEventListener('change', () => previewFile(profileInput, profilePreview));
+                        coverInput?.addEventListener('change', () => previewFile(coverInput, coverPreview));
+                    })();
+                </script>

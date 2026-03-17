@@ -35,7 +35,12 @@ class CommentController extends Controller
 
     return response()->json([
         'status' => 'success',
-        'comment' => $comment->load('user')
+        'comment' => $comment->load('user'),
+        'toast' => [
+            'type' => 'success',
+            'title' => 'Comment Added',
+            'message' => 'Comment posted by @' . auth()->user()->username . '.',
+        ],
     ]);
 }
 
@@ -54,7 +59,14 @@ class CommentController extends Controller
     {
         $comment = Comment::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
         $comment->delete();
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success' => true,
+            'toast' => [
+                'type' => 'warning',
+                'title' => 'Comment Deleted',
+                'message' => 'Comment deleted by @' . auth()->user()->username . '.',
+            ],
+        ]);
     }
 
     public function toggleLike($id)
@@ -77,7 +89,12 @@ class CommentController extends Controller
     return response()->json([
         'status' => $status,
         'count' => $comment->likes()->count(),
-        'isLiked' => $status === 'liked'
+        'isLiked' => $status === 'liked',
+        'toast' => [
+            'type' => $status === 'liked' ? 'success' : 'warning',
+            'title' => $status === 'liked' ? 'Comment Liked' : 'Comment Unliked',
+            'message' => ($status === 'liked' ? 'Liked by @' : 'Unliked by @') . auth()->user()->username . '.',
+        ],
     ]);
 }
 

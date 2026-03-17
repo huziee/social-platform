@@ -104,8 +104,26 @@ button.processing i{
     padding: 2px;
 }
 
-.avatar-story.story-seen img {
-    border: 3px solid #6c757d; /* grey */
-    padding: 2px;
-}
+        .avatar-story.story-seen img {
+            border: 3px solid #6c757d; /* grey */
+            padding: 2px;
+        }
+        .like-icon {
+            transition: transform 0.2s ease, color 0.2s ease;
+        }
+        .like-bounce {
+            animation: like-bounce 0.35s ease;
+        }
+        @keyframes like-bounce {
+            0% { transform: scale(1); }
+            45% { transform: scale(1.25); }
+            100% { transform: scale(1); }
+        }
+        .comment-flash {
+            animation: comment-flash 1.2s ease;
+        }
+        @keyframes comment-flash {
+            0% { background-color: rgba(25, 135, 84, 0.15); }
+            100% { background-color: transparent; }
+        }
     </style>

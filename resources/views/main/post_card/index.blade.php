@@ -131,8 +131,10 @@
         <ul class="nav nav-stack py-3 small">
             <li class="nav-item">
                 <a href="javascript:void(0)" onclick="toggleLike({{ $post->id }})"
+                    id="post-like-btn-{{ $post->id }}"
+                    data-liked="{{ $post->isLikedByAuth() ? 1 : 0 }}"
                     class="nav-link {{ $post->isLikedByAuth() ? 'text-danger' : '' }}">
-                    <i class="bi bi-heart-fill"></i>
+                    <i class="bi {{ $post->isLikedByAuth() ? 'bi-heart-fill text-danger' : 'bi-heart' }} like-icon"></i>
                     <span id="like-count-{{ $post->id }}">
                         {{ $post->likes->count() }} Like
                     </span>
@@ -140,7 +142,7 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="#!" onclick="openCommentsModal({{ $post->id }})"> <i
-                        class="bi bi-chat-fill pe-1"></i> Comments ({{ $post->comments->count() }} )</a>
+                        class="bi bi-chat-fill pe-1"></i> Comments (<span id="comment-count-{{ $post->id }}">{{ $post->comments->count() }}</span>)</a>
             </li>
             <!-- Card share action START -->
             <li class="nav-item dropdown ms-sm-auto">
@@ -188,7 +190,7 @@
         </div>
 
         <!-- Comment wrap START -->
-        <ul class="comment-wrap list-unstyled">
+        <ul class="comment-wrap list-unstyled" id="comment-list-{{ $post->id }}">
 
             @foreach ($post->comments->where('parent_id', null)->take(3) as $comment)
                 <li class="comment-item mb-3" id="comment-{{ $comment->id }}">
@@ -221,7 +223,7 @@
                                         onclick="likeComment({{ $comment->id }})"
                                         id="like-comment-{{ $comment->id }}">
                                         <i
-                                            class="bi {{ $comment->isLikedByAuth() ? 'bi-heart-fill text-danger' : 'bi-heart' }}"></i>
+                                            class="bi {{ $comment->isLikedByAuth() ? 'bi-heart-fill text-danger' : 'bi-heart' }} like-icon"></i>
                                         <span>{{ $comment->likes_count ?? 0 }} Like</span>
                                     </a>
                                 </li>

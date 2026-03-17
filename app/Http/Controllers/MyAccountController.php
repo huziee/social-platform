@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Post;
 use App\Models\User;
+use App\Models\FollowRequest;
 
 class MyAccountController extends Controller
 {
@@ -31,9 +32,10 @@ class MyAccountController extends Controller
         $savedPosts = $this->getSavedPosts();
 
         // Add this line to fetch followers for the connections partial
-    $followers = auth()->user()->followers()->with('followers')->get();
+        $followers = auth()->user()->followers()->with('followers')->get();
+        $followRequests = auth()->user()->receivedFollowRequests()->with('requester')->latest()->get();
 
-        return view('main.content.myProfile.index', compact('posts', 'followers', 'savedPosts'));
+        return view('main.content.myProfile.index', compact('posts', 'followers', 'savedPosts', 'followRequests'));
     }
 
     public function posts()
@@ -41,11 +43,13 @@ class MyAccountController extends Controller
         $posts = $this->getUserPosts();
         $savedPosts = $this->getSavedPosts();
         $followers = auth()->user()->followers()->with('followers')->get();
+        $followRequests = auth()->user()->receivedFollowRequests()->with('requester')->latest()->get();
 
         return view('main.content.myProfile.index', [
             'section' => 'posts',
             'posts' => $posts,
             'followers' => $followers,
+            'followRequests' => $followRequests,
             'savedPosts' => $savedPosts,
         ]);
     }
@@ -56,11 +60,13 @@ class MyAccountController extends Controller
     $savedPosts = $this->getSavedPosts();
     // Fetch the authenticated user's followers
     $followers = auth()->user()->followers()->with('followers')->get();
+    $followRequests = auth()->user()->receivedFollowRequests()->with('requester')->latest()->get();
 
     return view('main.content.myProfile.index', [
         'section' => 'connections',
         'posts' => $posts,
         'followers' => $followers, // Pass this to the view
+        'followRequests' => $followRequests,
         'savedPosts' => $savedPosts,
     ]);
 }
@@ -70,11 +76,13 @@ class MyAccountController extends Controller
         $posts = $this->getUserPosts();
         $savedPosts = $this->getSavedPosts();
         $followers = auth()->user()->followers()->with('followers')->get();
+        $followRequests = auth()->user()->receivedFollowRequests()->with('requester')->latest()->get();
 
         return view('main.content.myProfile.index', [
             'section' => 'about',
             'posts' => $posts,
             'followers' => $followers,
+            'followRequests' => $followRequests,
             'savedPosts' => $savedPosts,
         ]);
     }
@@ -107,14 +115,20 @@ class MyAccountController extends Controller
         return redirect()->route('profile.index');
     }
 
-    // 3. Fetch that specific user's posts
-    $posts = Post::with(['media', 'user', 'likes', 'comments.user'])
-                ->where('user_id', $user->id)
-                ->latest()
-                ->get();
+    $isFollowing = auth()->check() ? auth()->user()->isFollowing($user->id) : false;
+    $isRequested = auth()->check() ? auth()->user()->hasPendingFollowRequest($user->id) : false;
+    $canViewPosts = !$user->is_private || $isFollowing;
+
+    // 3. Fetch that specific user's posts (only if allowed)
+    $posts = $canViewPosts
+        ? Post::with(['media', 'user', 'likes', 'comments.user'])
+            ->where('user_id', $user->id)
+            ->latest()
+            ->get()
+        : collect();
 
     // 4. Return a separate view for public profiles
-    return view('main.content.userProfile.show', compact('user', 'posts'));
+    return view('main.content.userProfile.show', compact('user', 'posts', 'canViewPosts', 'isFollowing', 'isRequested'));
 }
 
 }

@@ -1,3 +1,53 @@
+<style>
+    .header-search-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+        z-index: 1000;
+        margin-top: 6px;
+        display: none;
+        max-height: 320px;
+        overflow-y: auto;
+    }
+    .header-search-item {
+        display: flex;
+        gap: 10px;
+        padding: 10px 12px;
+        text-decoration: none;
+        color: #111827;
+    }
+    .header-search-item:hover {
+        background: #f3f4f6;
+        color: #111827;
+    }
+    .header-search-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 999px;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+    .header-search-name {
+        font-weight: 600;
+        font-size: 14px;
+        line-height: 1.2;
+    }
+    .header-search-username {
+        font-size: 12px;
+        color: #6b7280;
+    }
+    .header-search-empty {
+        padding: 10px 12px;
+        font-size: 12px;
+        color: #6b7280;
+    }
+</style>
+
 <header class="navbar-light fixed-top header-static bg-mode">
     <!-- Logo Nav START -->
     <nav class="navbar navbar-expand-lg">
@@ -26,12 +76,14 @@
                 <!-- Nav Search START -->
                 <div class="nav mt-3 mt-lg-0 flex-nowrap align-items-center px-4 px-lg-0">
                     <div class="nav-item w-100">
-                        <form class="rounded position-relative">
+                        <form class="rounded position-relative" id="headerSearchForm" autocomplete="off">
                             <input class="form-control ps-5 bg-light" type="search" placeholder="Search..."
+                                id="headerSearchInput"
                                 aria-label="Search">
                             <button
                                 class="btn bg-transparent px-2 py-0 position-absolute top-50 start-0 translate-middle-y"
                                 type="submit"><i class="bi bi-search fs-5"> </i></button>
+                            <div class="header-search-dropdown" id="headerSearchResults"></div>
                         </form>
                     </div>
                 </div>

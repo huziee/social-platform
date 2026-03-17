@@ -27,7 +27,12 @@ class LikeController extends Controller
 
         return response()->json([
             'status' => $status,
-            'count' => $post->likes()->count()
+            'count' => $post->likes()->count(),
+            'toast' => [
+                'type' => $status === 'liked' ? 'success' : 'warning',
+                'title' => $status === 'liked' ? 'Post Liked' : 'Post Unliked',
+                'message' => ($status === 'liked' ? 'Liked by @' : 'Unliked by @') . auth()->user()->username . '.',
+            ],
         ]);
     }
 }

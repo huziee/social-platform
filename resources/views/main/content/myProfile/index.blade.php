@@ -70,7 +70,7 @@
             <div class="card">
                 <!-- Cover image -->
                 <div class="h-200px rounded-top"
-                    style="background-image:url({{ asset('assets/images/bg/05.jpg') }}); background-position: center; background-size: cover; background-repeat: no-repeat;">
+                    style="background-image:url({{ Auth::user()->cover_image ? asset('assets/images/covers/' . Auth::user()->cover_image) : asset('assets/images/bg/05.jpg') }}); background-position: center; background-size: cover; background-repeat: no-repeat;">
                 </div>
                 <!-- Card body START -->
                 <div class="card-body py-0">
@@ -263,7 +263,7 @@
                             <div class="row g-3">
 
                                 @forelse ($friendsPreview as $friend)
-                                    <div class="col-6">
+                                    <div class="col-6" data-connection-user-id="{{ $friend->id }}">
                                         <!-- Friends item START -->
                                         <div class="card shadow-none text-center h-100">
                                             <!-- Card body -->
@@ -333,6 +333,11 @@
         let tempDeletedVideos = [];
         let tempReplacedImages = {};
         let tempReplacedVideos = {};
+        function showToastFromResponse(data) {
+            if (window.showAppToast && data && data.toast) {
+                window.showAppToast(data.toast.type, data.toast.title, data.toast.message);
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
 
@@ -477,10 +482,10 @@
                     })
                     .then(res => res.json())
                     .then(data => {
-                        if (data.status !== 'success') {
-                            alert('Could not update profile info.');
-                            return;
-                        }
+                    if (data.status !== 'success') {
+                        alert('Could not update profile info.');
+                        return;
+                    }
 
                         if (descText) {
                             descText.textContent = payload.description ||
@@ -521,6 +526,7 @@
                         }
 
                         exitEditMode();
+                        showToastFromResponse(data);
                     })
                     .catch(() => {
                         alert('Server error while updating profile info.');
@@ -582,12 +588,41 @@
                 .catch(err => console.error('Fetch error:', err));
         }
 
+        function likeComment(commentId) {
+            fetch(`/comments/${commentId}/like`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    const link = document.querySelector(`#like-comment-${commentId}`);
+                    if (link) {
+                        const icon = link.querySelector('i');
+                        link.querySelector('span').innerText = `${data.count ?? 0} Like`;
+                        if (icon) {
+                            icon.className = data.status === 'liked' ? 'bi bi-heart-fill text-danger like-icon' : 'bi bi-heart like-icon';
+                            icon.classList.remove('like-bounce');
+                            void icon.offsetWidth;
+                            icon.classList.add('like-bounce');
+                        }
+                    }
+                    showToastFromResponse(data);
+                })
+                .catch(err => {
+                    console.error('Like error:', err);
+                });
+        }
+
         function submitModalComment(e) {
             e.preventDefault();
 
             const form = e.target;
             const input = form.querySelector('textarea');
-            const postId = form.closest('.modal-content') ?
+            const inModal = !!form.closest('.modal-content');
+            const postId = inModal ?
                 document.getElementById('modal-post-id').value :
                 form.getAttribute('data-post-id');
 
@@ -609,11 +644,20 @@
                 .then(data => {
                     if (data.status === 'success') {
                         input.value = '';
-                        if (form.closest('.modal')) {
+                        if (inModal) {
                             loadModalComments(postId);
                         } else {
-                            location.reload();
+                            const list = document.getElementById(`comment-list-${postId}`);
+                            if (list) {
+                                const html = renderInlineCommentHtml(data.comment);
+                                list.insertAdjacentHTML('afterbegin', html);
+                                const inserted = list.firstElementChild;
+                                if (inserted) inserted.classList.add('comment-flash');
+                            }
                         }
+
+                        updateCommentCount(postId, 1);
+                        showToastFromResponse(data);
                     } else {
                         alert(data.message || 'Error posting comment');
                     }
@@ -678,6 +722,13 @@
         }
 
         function toggleLike(postId) {
+            const btn = document.getElementById(`post-like-btn-${postId}`);
+            const countEl = document.getElementById(`like-count-${postId}`);
+            if (!btn || !countEl) return;
+            if (btn.classList.contains('processing')) return;
+
+            btn.classList.add('processing');
+
             fetch(`/like/${postId}`, {
                     method: 'POST',
                     headers: {
@@ -686,12 +737,98 @@
                 })
                 .then(res => res.json())
                 .then(data => {
-                    const el = document.getElementById(`like-count-${postId}`);
-                    if (el) {
-                        el.innerText = data.count + ' like' + (data.count !== 1 ? 's' : '');
+                    const icon = btn.querySelector('i');
+                    const isLiked = data.status === 'liked';
+
+                    btn.dataset.liked = isLiked ? '1' : '0';
+                    btn.classList.toggle('text-danger', isLiked);
+
+                    if (icon) {
+                        icon.className = isLiked ? 'bi bi-heart-fill text-danger like-icon' : 'bi bi-heart like-icon';
+                        icon.classList.remove('like-bounce');
+                        void icon.offsetWidth;
+                        icon.classList.add('like-bounce');
+                    }
+
+                    countEl.innerText = data.count + ' like' + (data.count !== 1 ? 's' : '');
+                    showToastFromResponse(data);
+                })
+                .catch(err => {
+                    console.error('Like toggle failed:', err);
+                })
+                .finally(() => {
+                    btn.classList.remove('processing');
+                });
+        }
+
+        function updateCommentCount(postId, delta) {
+            const countEl = document.getElementById(`comment-count-${postId}`);
+            if (!countEl) return;
+            const current = parseInt(countEl.textContent, 10) || 0;
+            countEl.textContent = Math.max(current + delta, 0);
+        }
+
+        function renderInlineCommentHtml(comment) {
+            const avatar = comment.user && comment.user.image ?
+                `/assets/images/users/${comment.user.image}` :
+                `/assets/images/avatar/07.jpg`;
+            return `
+            <li class="comment-item mb-3" id="comment-${comment.id}">
+                <div class="d-flex">
+                    <div class="avatar avatar-xs me-2">
+                        <img class="avatar-img rounded-circle" src="${avatar}">
+                    </div>
+                    <div class="w-100">
+                        <div class="bg-light p-2 rounded">
+                            <div class="d-flex justify-content-between">
+                                <h6 class="mb-0 small fw-bold">${comment.user.username}</h6>
+                                <div class="dropdown">
+                                    <i class="bi bi-three-dots cursor-pointer" data-bs-toggle="dropdown"></i>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item text-danger" href="javascript:void(0)"
+                                                onclick="deleteComment(${comment.id})">Delete</a></li>
+                                        <li><a class="dropdown-item" href="#">Report</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <p class="small mb-0">${comment.comment}</p>
+                        </div>
+                        <ul class="nav nav-divider py-1 small">
+                            <li class="nav-item">
+                                <a class="nav-link p-0 pe-2" href="javascript:void(0)" onclick="likeComment(${comment.id})" id="like-comment-${comment.id}">
+                                    <i class="bi bi-heart like-icon"></i>
+                                    <span>0 Like</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link p-0 pe-2" href="javascript:void(0)" onclick="showReplyInput(${comment.id})">Reply</a>
+                            </li>
+                            <li class="nav-item text-secondary">just now</li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+            `;
+        }
+
+        function deleteComment(commentId) {
+            if (!confirm('Are you sure?')) return;
+
+            fetch(`/comments/${commentId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
                     }
                 })
-                .catch(err => console.error('Like toggle failed:', err));
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const el = document.getElementById(`comment-${commentId}`);
+                        if (el) el.remove();
+                        showToastFromResponse(data);
+                    }
+                })
+                .catch(err => console.error('Delete comment failed:', err));
         }
 
         window.editPost = function(postId) {
@@ -958,22 +1095,106 @@
                     if (data.status !== 'success') return;
 
                     if (window.updateFollowButton) {
-                        window.updateFollowButton(btn, data.following);
+                        window.updateFollowButton(btn, data.following, data.requested);
                     }
                     if (window.updateFollowCounts) {
                         window.updateFollowCounts(data);
                     }
 
-                    if (btn && btn.classList.contains('btn-danger-soft') && !data.following) {
-                        const row = btn.closest('.d-md-flex');
-                        if (row) {
-                            row.style.transition = 'opacity 0.3s';
-                            row.style.opacity = '0';
-                            setTimeout(() => row.remove(), 300);
-                        }
+                    if (!data.following && !data.requested) {
+                        document.querySelectorAll(`[data-connection-user-id="${userId}"]`).forEach(el => {
+                            el.style.transition = 'opacity 0.3s';
+                            el.style.opacity = '0';
+                            setTimeout(() => el.remove(), 300);
+                        });
                     }
+
+                    showToastFromResponse(data);
                 })
                 .catch(err => console.error('Follow toggle failed:', err));
+        };
+
+        window.removeFollower = function(userId, btn) {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+            fetch(`/followers/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status !== 'success') return;
+
+                    if (window.updateFollowCounts) {
+                        window.updateFollowCounts({
+                            auth_id: data.auth_id,
+                            auth_followers_count: data.auth_followers_count,
+                            auth_following_count: data.auth_following_count,
+                            target_id: data.removed_id,
+                            target_followers_count: data.target_followers_count
+                        });
+                    }
+
+                    document.querySelectorAll(`[data-connection-user-id="${userId}"]`).forEach(el => {
+                        el.style.transition = 'opacity 0.3s';
+                        el.style.opacity = '0';
+                        setTimeout(() => el.remove(), 300);
+                    });
+
+                    showToastFromResponse(data);
+                })
+                .catch(err => console.error('Remove follower failed:', err));
+        };
+
+        window.acceptFollowRequest = function(userId, btn) {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+            fetch(`/follow-requests/${userId}/accept`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status !== 'success') return;
+
+                    const row = btn?.closest('[data-follow-request-user-id]');
+                    if (row) row.remove();
+
+                    if (window.updateFollowCounts) {
+                        window.updateFollowCounts(data);
+                    }
+
+                    showToastFromResponse(data);
+                })
+                .catch(err => console.error('Accept request failed:', err));
+        };
+
+        window.declineFollowRequest = function(userId, btn) {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+            fetch(`/follow-requests/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status !== 'success') return;
+
+                    const row = btn?.closest('[data-follow-request-user-id]');
+                    if (row) row.remove();
+
+                    showToastFromResponse(data);
+                })
+                .catch(err => console.error('Decline request failed:', err));
         };
 
         let postModal;
@@ -1027,3 +1248,4 @@ window.openPostModal = function(postId) {
 }
     </script>
 @endsection
+

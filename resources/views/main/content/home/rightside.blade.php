@@ -14,7 +14,6 @@
                     @foreach ($user as $us)
                         @if (auth()->id() !== $us->id)
                             <div class="hstack gap-2 mb-3">
-
                                 <!-- Avatar -->
                                 <div class="avatar">
                                     <a href="#">
@@ -30,22 +29,20 @@
                                     <p class="mb-0 small text-truncate">{{ $us->username }}</p>
                                 </div>
 
+                                @php
+                                    $isRequested = auth()->check() ? auth()->user()->hasPendingFollowRequest($us->id) : false;
+                                @endphp
                                 <button
                                     class="btn btn-primary-soft rounded-circle icon-md ms-auto
-                                    {{ auth()->user()->isFollowing($us->id) ? 'btn-secondary' : 'btn-primary' }}"
+                                    {{ auth()->user()->isFollowing($us->id) || $isRequested ? 'btn-secondary' : 'btn-primary' }}"
                                     onclick="toggleFollow({{ $us->id }}, this)">
 
-                                    <i
-                                        class="ff-btn bi
-                                        {{ auth()->user()->isFollowing($us->id) ? 'bi-person-check-fill' : 'bi-person-plus' }}">
-                                    </i>
+                                    <i class="ff-btn bi {{ auth()->user()->isFollowing($us->id) ? 'bi-person-check-fill' : ($isRequested ? 'bi-hourglass-split' : 'bi-person-plus') }}"></i>
 
                                 </button>
-
                             </div>
                         @endif
                     @endforeach
-
 
                     <!-- View more button -->
                     <div class="d-grid mt-3">
@@ -55,57 +52,46 @@
                 <!-- Card body END -->
             </div>
         </div>
-        <!-- Card follow START -->
+        <!-- Card follow END -->
 
-        <!-- Card News START -->
+        <!-- Card Blogs START -->
         <div class="col-sm-6 col-lg-12">
             <div class="card">
                 <!-- Card header START -->
                 <div class="card-header pb-0 border-0">
-                    <h5 class="card-title mb-0">Today’s news</h5>
+                    <h5 class="card-title mb-0">Blogs</h5>
                 </div>
                 <!-- Card header END -->
                 <!-- Card body START -->
                 <div class="card-body">
-                    <!-- News item -->
-                    <div class="mb-3">
-                        <h6 class="mb-0"><a href="blog-details.html">Ten questions you should answer
-                                truthfully</a></h6>
-                        <small>2hr</small>
+                    <div id="homeBlogsList">
+                        @if (!empty($blogs) && $blogs->count())
+                            @foreach ($blogs as $blog)
+                                <div class="d-flex gap-2 mb-3">
+                                    <img class="rounded" style="width: 52px; height: 52px; object-fit: cover;"
+                                        src="{{ $blog->image ? asset('assets/images/blogs/' . $blog->image) : asset('assets/images/post/16by9/big/03.jpg') }}"
+                                        alt="">
+                                    <div class="w-100">
+                                        <h6 class="mb-0">
+                                            <a href="{{ route('blogs.show', $blog) }}">{{ $blog->title }}</a>
+                                        </h6>
+                                        <small>
+                                            {{ $blog->start_date ? \Carbon\Carbon::parse($blog->start_date)->format('M d, Y') : 'Date TBA' }}
+                                        </small>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @else
+                            <div class="text-muted small">No blogs yet.</div>
+                        @endif
                     </div>
-                    <!-- News item -->
-                    <div class="mb-3">
-                        <h6 class="mb-0"><a href="blog-details.html">Five unbelievable facts about money</a>
-                        </h6>
-                        <small>3hr</small>
-                    </div>
-                    <!-- News item -->
-                    <div class="mb-3">
-                        <h6 class="mb-0"><a href="blog-details.html">Best Pinterest Boards for learning about
-                                business</a></h6>
-                        <small>4hr</small>
-                    </div>
-                    <!-- News item -->
-                    <div class="mb-3">
-                        <h6 class="mb-0"><a href="blog-details.html">Skills that you can learn from
-                                business</a></h6>
-                        <small>6hr</small>
-                    </div>
-                    <!-- Load more comments -->
-                    <a href="#!" role="button"
-                        class="btn btn-link btn-link-loader btn-sm text-secondary d-flex align-items-center"
-                        data-bs-toggle="button" aria-pressed="true">
-                        <div class="spinner-dots me-2">
-                            <span class="spinner-dot"></span>
-                            <span class="spinner-dot"></span>
-                            <span class="spinner-dot"></span>
-                        </div>
-                        View all latest news
+                    <a href="{{ route('blogs.index') }}" class="btn btn-link btn-sm text-secondary d-flex align-items-center">
+                        View all blogs
                     </a>
                 </div>
                 <!-- Card body END -->
             </div>
         </div>
-        <!-- Card News END -->
+        <!-- Card Blogs END -->
     </div>
 </div>

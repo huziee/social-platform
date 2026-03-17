@@ -3,8 +3,43 @@
         <h5 class="card-title">Connections</h5>
     </div>
     <div class="card-body">
+        @if(isset($followRequests) && $followRequests->count())
+            <div class="mb-4">
+                <h6 class="mb-3">Follow requests</h6>
+                @foreach ($followRequests as $request)
+                    @php $requester = $request->requester; @endphp
+                    @if($requester)
+                        <div class="d-md-flex align-items-center mb-3" data-follow-request-user-id="{{ $requester->id }}">
+                            <div class="avatar me-3 mb-2 mb-md-0">
+                                <a href="{{ route('user.profile', $requester->username) }}">
+                                    <img class="avatar-img rounded-circle"
+                                         src="{{ $requester->image ? asset('assets/images/users/' . $requester->image) : asset('assets/images/avatar/placeholder.jpg') }}"
+                                         alt="">
+                                </a>
+                            </div>
+                            <div class="w-100">
+                                <h6 class="mb-0">
+                                    <a href="{{ route('user.profile', $requester->username) }}">
+                                        {{ $requester->first_name }} {{ $requester->last_name }}
+                                    </a>
+                                </h6>
+                                <p class="small mb-0 text-muted">{{ $requester->username }}</p>
+                            </div>
+                            <div class="ms-md-auto d-flex">
+                                <button class="btn btn-success-soft btn-sm me-2"
+                                    onclick="acceptFollowRequest({{ $requester->id }}, this)">Accept</button>
+                                <button class="btn btn-danger-soft btn-sm"
+                                    onclick="declineFollowRequest({{ $requester->id }}, this)">Decline</button>
+                            </div>
+                        </div>
+                    @endif
+                @endforeach
+            </div>
+            <hr>
+        @endif
+
         @forelse($followers as $follower)
-            <div class="d-md-flex align-items-center mb-4">
+            <div class="d-md-flex align-items-center mb-4" data-connection-user-id="{{ $follower->id }}">
                 <div class="avatar me-3 mb-3 mb-md-0">
                     <a href="{{ route('user.profile', $follower->username) }}">
                         <img class="avatar-img rounded-circle" 
@@ -29,7 +64,8 @@
                     </ul>
                 </div>
                 <div class="ms-md-auto d-flex">
-                    <button class="btn btn-danger-soft btn-sm mb-0 me-2" onclick="toggleFollow({{ $follower->id }}, this)"> 
+                    <button class="btn btn-danger-soft btn-sm mb-0 me-2" data-remove-row="1"
+                        onclick="removeFollower({{ $follower->id }}, this)"> 
                         Remove 
                     </button>
                     <a href="{{ route('messages.show', ['id' => $follower->id]) }}" class="btn btn-primary-soft btn-sm mb-0"> 

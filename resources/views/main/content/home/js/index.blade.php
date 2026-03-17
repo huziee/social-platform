@@ -5,7 +5,30 @@
     let tempReplacedImages = {};
     let tempReplacedVideos = {};
 
+    function showToastFromResponse(data) {
+        if (window.showAppToast && data && data.toast) {
+            window.showAppToast(data.toast.type, data.toast.title, data.toast.message);
+        }
+    }
+
+    function fetchJson(url, options = {}) {
+        const opts = Object.assign({
+            credentials: 'same-origin'
+        }, options);
+        opts.headers = Object.assign({
+            'Accept': 'application/json'
+        }, options.headers || {});
+
+        return fetch(url, opts).then(res => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const contentType = res.headers.get('content-type') || '';
+            if (!contentType.includes('application/json')) throw new Error('Invalid JSON response');
+            return res.json();
+        });
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
+
         initSliders();
 
         const myDropzone = new Dropzone("#postDropzone", {
@@ -28,14 +51,13 @@
                 formData.append('images[]', file);
             });
 
-            fetch("{{ route('post.store') }}", {
+            fetchJson("{{ route('post.store') }}", {
                     method: "POST",
                     headers: {
                         "X-CSRF-TOKEN": "{{ csrf_token() }}"
                     },
                     body: formData
                 })
-                .then(res => res.json())
                 .then(data => {
                     if (!data.success) return;
 
@@ -55,12 +77,81 @@
                             modalEl);
                         modal.hide();
                     }
+                    showToastFromResponse(data);
                 })
                 .catch(err => {
                     console.error(err);
-                    alert('Something went wrong.');
+                    alert('Could not create post. Please refresh and try again.');
                 });
         });
+
+        const blogForm = document.getElementById('blogCreateForm');
+        if (blogForm) {
+            blogForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(blogForm);
+                const xhr = new XMLHttpRequest();
+
+                xhr.open('POST', "{{ route('blogs.store') }}", true);
+                xhr.setRequestHeader('X-CSRF-TOKEN', "{{ csrf_token() }}");
+                xhr.setRequestHeader('Accept', 'application/json');
+
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState !== 4) return;
+
+                    if (xhr.status === 200) {
+                        let data;
+                        try {
+                            data = JSON.parse(xhr.responseText);
+                        } catch (err) {
+                            console.error(err);
+                            return;
+                        }
+
+                        if (data.status === 'success' && data.blog) {
+                            const list = document.getElementById('homeBlogsList');
+                            if (list) {
+                                const dateText = data.blog.start_date ? data.blog.start_date : 'Date TBA';
+                                const itemHtml = `
+                                    <div class="d-flex gap-2 mb-3">
+                                        <img class="rounded" style="width: 52px; height: 52px; object-fit: cover;"
+                                            src="${data.blog.image}" alt="">
+                                        <div class="w-100">
+                                            <h6 class="mb-0">
+                                                <a href="${data.blog.url}">${data.blog.title}</a>
+                                            </h6>
+                                            <small>${dateText}</small>
+                                        </div>
+                                    </div>
+                                `;
+
+                                if (list.querySelector('.text-muted')) {
+                                    list.innerHTML = '';
+                                }
+                                list.insertAdjacentHTML('afterbegin', itemHtml);
+
+                                while (list.children.length > 5) {
+                                    list.removeChild(list.lastElementChild);
+                                }
+                            }
+
+                            blogForm.reset();
+                            const modalEl = document.getElementById('modalCreateBlog');
+                            if (modalEl) {
+                                const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+                                modal.hide();
+                            }
+                            showToastFromResponse(data);
+                        }
+                    } else {
+                        alert('Could not create blog.');
+                    }
+                };
+
+                xhr.send(formData);
+            });
+        }
 
         // function toggleFollow(userId, btn) {
         //     const icon = btn.querySelector('i');
@@ -198,8 +289,48 @@
                 .catch(err => console.error(err));
         }
 
-
     })
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const loadMoreBtn = document.getElementById('loadMoreBtn');
+        if (!loadMoreBtn) return;
+
+        loadMoreBtn.addEventListener('click', function() {
+            const nextPage = loadMoreBtn.getAttribute('data-next-page');
+            if (!nextPage) return;
+
+            loadMoreBtn.disabled = true;
+            loadMoreBtn.textContent = 'Loading...';
+
+            fetch(nextPage, {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    const feed = document.getElementById('postsFeed');
+                    if (feed && data.html) {
+                        feed.insertAdjacentHTML('beforeend', data.html);
+                        initSliders();
+                    }
+
+                    if (data.next_page_url) {
+                        loadMoreBtn.setAttribute('data-next-page', data.next_page_url);
+                        loadMoreBtn.disabled = false;
+                        loadMoreBtn.textContent = 'Load more';
+                    } else {
+                        const wrap = document.getElementById('loadMoreWrap');
+                        if (wrap) wrap.remove();
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    loadMoreBtn.disabled = false;
+                    loadMoreBtn.textContent = 'Load more';
+                });
+        });
+    });
 
 
     function toggleFollow(userId, element) {
@@ -220,11 +351,12 @@
             .then(data => {
                 if (data.status === 'success') {
                     if (window.updateFollowButton) {
-                        window.updateFollowButton(element, data.following);
+                        window.updateFollowButton(element, data.following, data.requested);
                     }
                     if (window.updateFollowCounts) {
                         window.updateFollowCounts(data);
                     }
+                    showToastFromResponse(data);
                 }
             })
             .catch(err => {
@@ -267,6 +399,7 @@
                             }
                         }, 400);
                     }
+                    showToastFromResponse(data);
                 } else {
                     alert(data.message || 'Something went wrong.');
                 }
@@ -556,7 +689,7 @@
                     <ul class="nav nav-divider py-1 small">
                         <li class="nav-item">
                             <a class="nav-link p-0 pe-2" href="javascript:void(0)" id="like-comment-${c.id}" onclick="likeComment(${c.id})">
-                                <i class="bi ${c.is_liked ? 'bi-heart-fill text-danger' : 'bi-heart'}"></i> 
+                                <i class="bi ${c.is_liked ? 'bi-heart-fill text-danger' : 'bi-heart'} like-icon"></i> 
                                 <span>${c.likes_count ?? 0} Like</span>
                             </a>
                         </li>
@@ -597,11 +730,16 @@
             .then(data => {
                 const link = document.querySelector(`#like-comment-${commentId}`);
                 if (link) {
-                    // Fix: ensure we use data.count as returned by your LikeController
+                    const icon = link.querySelector('i');
                     link.querySelector('span').innerText = `${data.count ?? 0} Like`;
-                    link.querySelector('i').className = data.status === 'liked' ? 'bi bi-heart-fill text-danger' :
-                        'bi bi-heart';
+                    if (icon) {
+                        icon.className = data.status === 'liked' ? 'bi bi-heart-fill text-danger like-icon' : 'bi bi-heart like-icon';
+                        icon.classList.remove('like-bounce');
+                        void icon.offsetWidth;
+                        icon.classList.add('like-bounce');
+                    }
                 }
+                showToastFromResponse(data);
             })
             .catch(err => console.error("Like error:", err));
     }
@@ -611,7 +749,8 @@
 
         const form = e.target;
         const input = form.querySelector('textarea');
-        const postId = form.closest('.modal-content') ?
+        const inModal = !!form.closest('.modal-content');
+        const postId = inModal ?
             document.getElementById('modal-post-id').value :
             form.getAttribute('data-post-id'); // For feed-level comments
 
@@ -633,12 +772,27 @@
             .then(data => {
                 if (data.status === 'success') {
                     input.value = '';
-                    // Refresh logic
-                    if (form.closest('.modal')) {
-                        loadModalComments(postId);
+
+                    if (inModal) {
+                        const container = document.getElementById('modal-comments');
+                        if (container) {
+                            const comment = data.comment;
+                            comment.replies = comment.replies || [];
+                            const html = renderCommentHtml(comment);
+                            container.insertAdjacentHTML('afterbegin', html);
+                        }
                     } else {
-                        location.reload(); // Or implement a dynamic refresh for the feed list
+                        const list = document.getElementById(`comment-list-${postId}`);
+                        if (list) {
+                            const html = renderInlineCommentHtml(data.comment);
+                            list.insertAdjacentHTML('afterbegin', html);
+                            const inserted = list.firstElementChild;
+                            if (inserted) inserted.classList.add('comment-flash');
+                        }
                     }
+
+                    updateCommentCount(postId, 1);
+                    showToastFromResponse(data);
                 } else {
                     alert(data.message || 'Error posting comment');
                 }
@@ -664,6 +818,13 @@
 
     // Toggle like (existing)
     function toggleLike(postId) {
+        const btn = document.getElementById(`post-like-btn-${postId}`);
+        const countEl = document.getElementById(`like-count-${postId}`);
+        if (!btn || !countEl) return;
+        if (btn.classList.contains('processing')) return;
+
+        btn.classList.add('processing');
+
         fetch(`/like/${postId}`, {
                 method: 'POST',
                 headers: {
@@ -672,9 +833,76 @@
             })
             .then(res => res.json())
             .then(data => {
-                document.getElementById(`like-count-${postId}`).innerText = data.count + ' like' + (data.count !==
-                    1 ? 's' : '');
+                const icon = btn.querySelector('i');
+                const isLiked = data.status === 'liked';
+
+                btn.dataset.liked = isLiked ? '1' : '0';
+                btn.classList.toggle('text-danger', isLiked);
+
+                if (icon) {
+                    icon.className = isLiked ? 'bi bi-heart-fill text-danger like-icon' : 'bi bi-heart like-icon';
+                    icon.classList.remove('like-bounce');
+                    void icon.offsetWidth;
+                    icon.classList.add('like-bounce');
+                }
+
+                countEl.innerText = data.count + ' like' + (data.count !== 1 ? 's' : '');
+                showToastFromResponse(data);
+            })
+            .catch(err => console.error('Like error:', err))
+            .finally(() => {
+                btn.classList.remove('processing');
             });
+    }
+
+    function updateCommentCount(postId, delta) {
+        const countEl = document.getElementById(`comment-count-${postId}`);
+        if (!countEl) return;
+        const current = parseInt(countEl.textContent, 10) || 0;
+        countEl.textContent = Math.max(current + delta, 0);
+    }
+
+    function renderInlineCommentHtml(comment) {
+        const avatar = comment.user && comment.user.image ?
+            `/assets/images/users/${comment.user.image}` :
+            `/assets/images/avatar/07.jpg`;
+        return `
+            <li class="comment-item mb-3" id="comment-${comment.id}">
+                <div class="d-flex">
+                    <div class="avatar avatar-xs me-2">
+                        <img class="avatar-img rounded-circle" src="${avatar}">
+                    </div>
+                    <div class="w-100">
+                        <div class="bg-light p-2 rounded">
+                            <div class="d-flex justify-content-between">
+                                <h6 class="mb-0 small fw-bold">${comment.user.username}</h6>
+                                <div class="dropdown">
+                                    <i class="bi bi-three-dots cursor-pointer" data-bs-toggle="dropdown"></i>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item text-danger" href="javascript:void(0)"
+                                                onclick="deleteComment(${comment.id})">Delete</a></li>
+                                        <li><a class="dropdown-item" href="#">Report</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <p class="small mb-0">${comment.comment}</p>
+                        </div>
+                        <ul class="nav nav-divider py-1 small">
+                            <li class="nav-item">
+                                <a class="nav-link p-0 pe-2" href="javascript:void(0)" onclick="likeComment(${comment.id})" id="like-comment-${comment.id}">
+                                    <i class="bi bi-heart like-icon"></i>
+                                    <span>0 Like</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link p-0 pe-2" href="javascript:void(0)" onclick="showReplyInput(${comment.id})">Reply</a>
+                            </li>
+                            <li class="nav-item text-secondary">just now</li>
+                        </ul>
+                    </div>
+                </div>
+            </li>
+        `;
     }
 
     Dropzone.autoDiscover = false;
@@ -703,14 +931,13 @@
                 formData.append('videos[]', file);
             });
 
-            fetch("{{ route('post.store') }}", {
+            fetchJson("{{ route('post.store') }}", {
                     method: "POST",
                     headers: {
                         "X-CSRF-TOKEN": "{{ csrf_token() }}"
                     },
                     body: formData
                 })
-                .then(res => res.json())
                 .then(data => {
 
                     if (!data.success) return;
@@ -724,6 +951,11 @@
                     bootstrap.Modal
                         .getInstance(document.getElementById('feedActionVideo'))
                         .hide();
+                    showToastFromResponse(data);
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Could not create post. Please refresh and try again.');
                 });
         });
 
@@ -748,14 +980,13 @@
             formData.append(`media[${index}]`, file);
         });
 
-        fetch("{{ route('post.store') }}", {
+        fetchJson("{{ route('post.store') }}", {
                 method: "POST",
                 headers: {
                     "X-CSRF-TOKEN": "{{ csrf_token() }}"
                 },
                 body: formData
             })
-            .then(res => res.json())
             .then(data => {
                 if (data.success) {
                     // Your existing logic to prepend the post to the feed
@@ -764,7 +995,12 @@
                     this.reset();
                     bootstrap.Modal.getInstance(document.getElementById('feedActionMultiple')).hide();
                     if (typeof initSliders === 'function') initSliders();
+                    showToastFromResponse(data);
                 }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Could not create post. Please refresh and try again.');
             });
     });
     // 1. Show/Hide Reply Input
@@ -854,7 +1090,10 @@
             .then(data => {
                 if (data.success) {
                     document.getElementById(`comment-${commentId}`).remove();
+                    showToastFromResponse(data);
                 }
             });
     }
 </script>
+
+

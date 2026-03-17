@@ -155,6 +155,9 @@
 @section('main')
     <div class="container">
         <div class="card mb-4 border-0 shadow-sm">
+            <div class="h-200px rounded-top"
+                style="background-image:url({{ $user->cover_image ? asset('assets/images/covers/' . $user->cover_image) : asset('assets/images/bg/05.jpg') }}); background-position: center; background-size: cover; background-repeat: no-repeat;">
+            </div>
             <div class="card-body p-4">
                 <div class="d-sm-flex align-items-center">
                     <div class="avatar avatar-xxl">
@@ -168,10 +171,13 @@
                             <li class="list-inline-item">@ {{ $user->username }}</li>
                         </ul>
                         <div class="d-flex gap-2">
-                            @php $isFollowing = auth()->user()->isFollowing($user->id); @endphp
-                            <button class="btn btn-sm {{ $isFollowing ? 'btn-secondary' : 'btn-primary' }} px-4"
+                            @php
+                                $isFollowing = auth()->user()->isFollowing($user->id);
+                                $isRequested = auth()->user()->hasPendingFollowRequest($user->id);
+                            @endphp
+                            <button class="btn btn-sm {{ ($isFollowing || $isRequested) ? 'btn-secondary' : 'btn-primary' }} px-4"
                                 onclick="toggleFollow({{ $user->id }}, this)">
-                                {{ $isFollowing ? 'Following' : 'Follow' }}
+                                {{ $isRequested ? 'Requested' : ($isFollowing ? 'Following' : 'Follow') }}
                             </button>
                             <a href="{{ route('messages.index') }}" class="btn btn-sm btn-outline-primary px-3"><i
                                     class="bi bi-envelope"></i></a>
@@ -202,28 +208,35 @@
 
         <div class="tab-content">
             <div class="tab-pane fade show active" id="tab-posts">
-                <div class="profile-grid">
-                    @forelse ($posts as $post)
-                        <div class="grid-item" onclick="openPostModal({{ $post->id }})">
-                            @php $media = $post->media->first(); @endphp
-                            @if ($media && $media->type == 'video')
-                                <video src="{{ asset($media->file_path) }}"></video>
-                            @else
-                                <img
-                                    src="{{ $media ? asset($media->file_path) : asset('assets/images/post/placeholder.jpg') }}">
-                            @endif
-                            <div class="grid-overlay">
-                                <span class="me-3"><i class="bi bi-heart-fill"></i> {{ $post->likes->count() }}</span>
-                                <span><i class="bi bi-chat-fill"></i> {{ $post->comments->count() }}</span>
+                @if(!$canViewPosts)
+                    <div class="col-12 text-center py-5">
+                        <i class="bi bi-lock h1 text-muted"></i>
+                        <p class="text-muted mb-0">This account is private. Follow to see posts.</p>
+                    </div>
+                @else
+                    <div class="profile-grid">
+                        @forelse ($posts as $post)
+                            <div class="grid-item" onclick="openPostModal({{ $post->id }})">
+                                @php $media = $post->media->first(); @endphp
+                                @if ($media && $media->type == 'video')
+                                    <video src="{{ asset($media->file_path) }}"></video>
+                                @else
+                                    <img
+                                        src="{{ $media ? asset($media->file_path) : asset('assets/images/post/placeholder.jpg') }}">
+                                @endif
+                                <div class="grid-overlay">
+                                    <span class="me-3"><i class="bi bi-heart-fill"></i> {{ $post->likes->count() }}</span>
+                                    <span><i class="bi bi-chat-fill"></i> {{ $post->comments->count() }}</span>
+                                </div>
                             </div>
-                        </div>
-                    @empty
-                        <div class="col-12 text-center py-5">
-                            <i class="bi bi-camera h1 text-muted"></i>
-                            <p class="text-muted">No posts yet.</p>
-                        </div>
-                    @endforelse
-                </div>
+                        @empty
+                            <div class="col-12 text-center py-5">
+                                <i class="bi bi-camera h1 text-muted"></i>
+                                <p class="text-muted">No posts yet.</p>
+                            </div>
+                        @endforelse
+                    </div>
+                @endif
             </div>
 
             <div class="tab-pane fade" id="tab-about">
@@ -504,9 +517,13 @@
                 .then(data => {
                     if (data.status !== 'success') return;
 
-                    btn.innerText = data.following ? 'Following' : 'Follow';
-                    btn.classList.toggle('btn-primary', !data.following);
-                    btn.classList.toggle('btn-secondary', data.following);
+                    if (window.updateFollowButton) {
+                        window.updateFollowButton(btn, data.following, data.requested);
+                    } else {
+                        btn.innerText = data.requested ? 'Requested' : (data.following ? 'Following' : 'Follow');
+                        btn.classList.toggle('btn-primary', !(data.following || data.requested));
+                        btn.classList.toggle('btn-secondary', (data.following || data.requested));
+                    }
 
                     if (window.updateFollowCounts) {
                         window.updateFollowCounts(data);

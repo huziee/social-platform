@@ -59,7 +59,7 @@
                                 <!-- Notification list item -->
                                 <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-3">
                                     <div class="me-2">
-                                        <h6 class="mb-0">Events</h6>
+                                        <h6 class="mb-0">Blogs</h6>
                                         <p class="small mb-0">Fulfilled direction use continually.</p>
                                     </div>
                                     <div class="form-check form-switch">

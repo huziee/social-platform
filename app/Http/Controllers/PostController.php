@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Post;
 use App\Models\User;
+use App\Models\Blog;
 use App\Models\PostMedia;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
@@ -17,9 +18,10 @@ class PostController extends Controller
 {
     public function index()
     {
-        $posts = Post::with('images', 'user')->latest()->get();
+        $posts = Post::with(['media', 'user', 'likes', 'comments.user'])->latest()->paginate(5);
         $user = User::latest()->get();
-        return view('main.content.home.index', compact('posts', 'user'));
+        $blogs = Blog::with('user')->latest()->take(5)->get();
+        return view('main.content.home.index', compact('posts', 'user', 'blogs'));
     }
 
     public function store(Request $request)
@@ -126,7 +128,12 @@ class PostController extends Controller
 
         return response()->json([
             'success' => true,
-            'html' => view('main.post_card.index', ['post' => $post])->render()
+            'html' => view('main.post_card.index', ['post' => $post])->render(),
+            'toast' => [
+                'type' => 'success',
+                'title' => 'Post Created',
+                'message' => 'Created by @' . auth()->user()->username . '.',
+            ],
         ]);
     }
 
@@ -214,7 +221,12 @@ class PostController extends Controller
             'success' => true,
             'images' => $images,
             'videos' => $videos, // Send videos back!
-            'caption' => $post->caption
+            'caption' => $post->caption,
+            'toast' => [
+                'type' => 'success',
+                'title' => 'Post Updated',
+                'message' => 'Updated by @' . auth()->user()->username . '.',
+            ],
         ]);
     }
 
@@ -280,7 +292,12 @@ class PostController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Post deleted successfully'
+            'message' => 'Post deleted successfully',
+            'toast' => [
+                'type' => 'warning',
+                'title' => 'Post Deleted',
+                'message' => 'Deleted by @' . auth()->user()->username . '.',
+            ],
         ]);
     }
 
@@ -339,6 +356,23 @@ class PostController extends Controller
 
         return response()->json([
             'url' => asset('assets/images/posts/' . $filename)
+        ]);
+    }
+
+     public function loadMore(Request $request)
+    {
+        $posts = Post::with(['media', 'user', 'likes', 'comments.user'])
+            ->latest()
+            ->paginate(5);
+
+        $html = '';
+        foreach ($posts as $post) {
+            $html .= view('main.post_card.index', ['post' => $post])->render();
+        }
+
+        return response()->json([
+            'html' => $html,
+            'next_page_url' => $posts->nextPageUrl(),
         ]);
     }
 

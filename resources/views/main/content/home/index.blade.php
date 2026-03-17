@@ -66,8 +66,8 @@
                     </li>
                     <li class="nav-item">
                         <a href="#" class="nav-link bg-light py-1 px-2 mb-0" data-bs-toggle="modal"
-                            data-bs-target="#modalCreateEvents"> <i
-                                class="bi bi-calendar2-event-fill text-danger pe-2"></i>Event </a>
+                            data-bs-target="#modalCreateBlog"> <i
+                                class="bi bi-calendar2-event-fill text-danger pe-2"></i>Blog</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link bg-light py-1 px-2 mb-0" href="#"><i
@@ -86,221 +86,17 @@
                 @endforeach
             </div>
 
+            @if ($posts->nextPageUrl())
+                <div class="text-center" id="loadMoreWrap">
+                    <button class="btn btn-primary-soft btn-lg w-100" id="loadMoreBtn"
+                        data-next-page="{{ route('posts.loadMore', ['page' => $posts->currentPage() + 1]) }}">
+                        Load more
+                    </button>
+                </div>
+            @endif
+
 
             <!-- Card feed item END -->
-
-            <!-- Card feed item START -->
-            <div class="card">
-                <!-- Card header START -->
-                <div class="card-header d-flex justify-content-between align-items-center border-0 pb-0">
-                    <h6 class="card-title mb-0">People you may know</h6>
-                    <button class="btn btn-sm btn-primary-soft"> See all </button>
-                </div>
-                <!-- Card header START -->
-
-                <!-- Card body START -->
-                <div class="card-body">
-                    <div class="tiny-slider arrow-hover">
-                        <div class="tiny-slider-inner ms-n4" data-arrow="true" data-dots="false" data-items-xl="3"
-                            data-items-lg="2" data-items-md="2" data-items-sm="2" data-items-xs="1" data-gutter="12"
-                            data-edge="30">
-                            <!-- Slider items -->
-                            <div>
-                                <!-- Card add friend item START -->
-                                <div class="card shadow-none text-center">
-                                    <!-- Card body -->
-                                    <div class="card-body p-2 pb-0">
-                                        <div class="avatar avatar-xl">
-                                            <a href="#!"><img class="avatar-img rounded-circle"
-                                                    src="assets/images/avatar/09.jpg" alt=""></a>
-                                        </div>
-                                        <h6 class="card-title mb-1 mt-3"> <a href="#!"> Amanda Reed </a></h6>
-                                        <p class="mb-0 small lh-sm">50 mutual connections</p>
-                                    </div>
-                                    <!-- Card footer -->
-                                    <div class="card-footer p-2 border-0">
-                                        <button class="btn btn-sm btn-primary-soft w-100"> Add friend </button>
-                                    </div>
-                                </div>
-                                <!-- Card add friend item END -->
-                            </div>
-                            <div>
-                                <!-- Card add friend item START -->
-                                <div class="card shadow-none text-center">
-                                    <!-- Card body -->
-                                    <div class="card-body p-2 pb-0">
-                                        <div class="avatar avatar-story avatar-xl">
-                                            <a href="#!"><img class="avatar-img rounded-circle"
-                                                    src="assets/images/avatar/10.jpg" alt=""></a>
-                                        </div>
-                                        <h6 class="card-title mb-1 mt-3"> <a href="#!"> Larry Lawson </a></h6>
-                                        <p class="mb-0 small lh-sm">33 mutual connections</p>
-                                    </div>
-                                    <!-- Card footer -->
-                                    <div class="card-footer p-2 border-0">
-                                        <button class="btn btn-sm btn-primary-soft w-100"> Add friend </button>
-                                    </div>
-                                </div>
-                                <!-- Card add friend item END -->
-                            </div>
-                            <div>
-                                <!-- Card add friend item START -->
-                                <div class="card shadow-none text-center">
-                                    <!-- Card body -->
-                                    <div class="card-body p-2 pb-0">
-                                        <div class="avatar avatar-xl">
-                                            <a href="#!"><img class="avatar-img rounded-circle"
-                                                    src="assets/images/avatar/11.jpg" alt=""></a>
-                                        </div>
-                                        <h6 class="card-title mb-1 mt-3"> <a href="#!"> Louis Crawford </a></h6>
-                                        <p class="mb-0 small lh-sm">45 mutual connections</p>
-                                    </div>
-                                    <!-- Card footer -->
-                                    <div class="card-footer p-2 border-0">
-                                        <button class="btn btn-sm btn-primary-soft w-100"> Add friend </button>
-                                    </div>
-                                </div>
-                                <!-- Card add friend item END -->
-                            </div>
-                            <div>
-                                <!-- Card add friend item START -->
-                                <div class="card shadow-none text-center">
-                                    <!-- Card body -->
-                                    <div class="card-body p-2 pb-0">
-                                        <div class="avatar avatar-xl">
-                                            <a href="#!"><img class="avatar-img rounded-circle"
-                                                    src="assets/images/avatar/12.jpg" alt=""></a>
-                                        </div>
-                                        <h6 class="card-title mb-1 mt-3"> <a href="#!"> Dennis Barrett </a></h6>
-                                        <p class="mb-0 small lh-sm">21 mutual connections</p>
-                                    </div>
-                                    <!-- Card footer -->
-                                    <div class="card-footer p-2 border-0">
-                                        <button class="btn btn-sm btn-primary-soft w-100"> Add friend </button>
-                                    </div>
-                                </div>
-                                <!-- Card add friend item END -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Card body END -->
-            </div>
-            <!-- Card feed item END -->
-
-            <!-- Story START -->
-            <div>
-                <h6 class="mb-3">Suggested stories </h6>
-                <div class="tiny-slider arrow-hover overflow-hidden">
-                    <div class="tiny-slider-inner ms-n4" data-arrow="true" data-dots="true" data-loop="false"
-                        data-autoplay="false" data-items-xl="4" data-items-lg="3" data-items-md="3" data-items-sm="3"
-                        data-items-xs="2" data-gutter="12" data-edge="24">
-
-                        <!-- Slider items -->
-                        <div>
-                            <!-- Card START -->
-                            <div class="card card-overlay-bottom border-0 position-relative h-150px"
-                                style="background-image:url(assets/images/post/1by1/02.jpg); background-position: center left; background-size: cover;">
-                                <div class="card-img-overlay d-flex align-items-center p-2">
-                                    <div class="w-100 mt-auto">
-                                        <!-- Name -->
-                                        <a href="#!" class="stretched-link text-white small">Judy Nguyen</a>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Card END -->
-                        </div>
-
-                        <!-- Slider items -->
-                        <div>
-                            <!-- Card START -->
-                            <div class="card card-overlay-bottom border-0 position-relative h-150px"
-                                style="background-image:url(assets/images/post/1by1/03.jpg); background-position: center left; background-size: cover;">
-                                <div class="card-img-overlay d-flex align-items-center p-2">
-                                    <div class="w-100 mt-auto">
-                                        <!-- Name -->
-                                        <a href="#!" class="stretched-link text-white small">Samuel Bishop</a>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Card END -->
-                        </div>
-
-                        <!-- Slider items -->
-                        <div>
-                            <!-- Card START -->
-                            <div class="card card-overlay-bottom border-0 position-relative h-150px"
-                                style="background-image:url(assets/images/post/1by1/04.jpg); background-position: center left; background-size: cover;">
-                                <div class="card-img-overlay d-flex align-items-center p-2">
-                                    <div class="w-100 mt-auto">
-                                        <!-- Name -->
-                                        <a href="#!" class="stretched-link text-white small">Carolyn Ortiz</a>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Card END -->
-                        </div>
-
-                        <!-- Slider items -->
-                        <div>
-                            <!-- Card START -->
-                            <div class="card card-overlay-bottom border-0 position-relative h-150px"
-                                style="background-image:url(assets/images/post/1by1/05.jpg); background-position: center left; background-size: cover;">
-                                <div class="card-img-overlay d-flex align-items-center p-2">
-                                    <div class="w-100 mt-auto">
-                                        <!-- Name -->
-                                        <a href="#!" class="stretched-link text-white small">Amanda Reed</a>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Card END -->
-                        </div>
-
-                        <!-- Slider items -->
-                        <div>
-                            <!-- Card START -->
-                            <div class="card card-overlay-bottom border-0 position-relative h-150px"
-                                style="background-image:url(assets/images/post/1by1/01.jpg); background-position: center left; background-size: cover;">
-                                <div class="card-img-overlay d-flex align-items-center p-2">
-                                    <div class="w-100 mt-auto">
-                                        <!-- Name -->
-                                        <a href="#!" class="stretched-link text-white small">Lori Stevens</a>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Card END -->
-                        </div>
-
-                        <!-- Slider items -->
-                        <div>
-                            <!-- Card START -->
-                            <div class="card card-overlay-bottom border-0 position-relative h-150px"
-                                style="background-image:url(assets/images/post/1by1/06.jpg); background-position: center left; background-size: cover;">
-                                <div class="card-img-overlay d-flex align-items-center p-2">
-                                    <div class="w-100 mt-auto">
-                                        <!-- Name -->
-                                        <a href="#!" class="stretched-link text-white small">Joan Wallace</a>
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Card END -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Story END -->
-
-            <!-- Load more button START -->
-            <a href="#!" role="button" class="btn btn-loader btn-primary-soft" data-bs-toggle="button"
-                aria-pressed="true">
-                <span class="load-text"> Load more </span>
-                <div class="load-icon">
-                    <div class="spinner-grow spinner-grow-sm" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
-            </a>
-            <!-- Load more button END -->
 
         </div>
         <!-- Main content END -->
@@ -321,9 +117,9 @@
     @include('main.modals.homeModals.videoCreateModal')
     <!-- Modal create Feed video END -->
 
-    <!-- Modal create events START -->
-    @include('main.modals.homeModals.eventCreateModal')
-    <!-- Modal create events END -->
+    <!-- Modal create blogs START -->
+    @include('main.modals.homeModals.blogCreateModal')
+    <!-- Modal create blogs END -->
 
     @include('main.modals.homeModals.postEditModal')
 
@@ -339,3 +135,4 @@
     @include('main.content.home.js.index')
 
 @endsection
+

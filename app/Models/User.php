@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Models\FollowRequest;
 
 class User extends Authenticatable
 {
@@ -27,6 +28,8 @@ class User extends Authenticatable
         'description',
         'password',
         'image',
+        'cover_image',
+        'is_private',
         'role',
         'status',
         'address',
@@ -82,6 +85,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_private' => 'boolean',
         ];
     }
 
@@ -112,4 +116,19 @@ public function savedPosts()
 {
     return $this->belongsToMany(Post::class, 'saved_posts')->withTimestamps();
 }
+
+    public function receivedFollowRequests()
+    {
+        return $this->hasMany(FollowRequest::class, 'target_id');
+    }
+
+    public function sentFollowRequests()
+    {
+        return $this->hasMany(FollowRequest::class, 'requester_id');
+    }
+
+    public function hasPendingFollowRequest($userId): bool
+    {
+        return $this->sentFollowRequests()->where('target_id', $userId)->exists();
+    }
 }

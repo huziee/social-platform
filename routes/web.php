@@ -10,6 +10,8 @@ use App\Http\Controllers\StoryController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ChatController;
 use App\Http\Controllers\SavedPostController;
+use App\Http\Controllers\SearchController;
+use App\Http\Controllers\BlogController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -34,6 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/posts/{id}/update-modal', [PostController::class, 'updateModal'])->name('posts.updateModal');
 
     Route::get('/posts/{id}/preview', [PostController::class, 'preview'])->name('posts.preview');
+    Route::get('/posts/load-more', [PostController::class, 'loadMore'])->name('posts.loadMore');
 
     Route::post('/like/{post}', [LikeController::class, 'togglestatus']);
     Route::post('/comments', [CommentController::class, 'store'])->name('comments.store');
@@ -45,6 +48,12 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/follow/{user}', [FollowController::class, 'toggle'])
         ->name('follow.toggle');
+    Route::delete('/followers/{user}', [FollowController::class, 'removeFollower'])
+        ->name('follow.removeFollower');
+    Route::post('/follow-requests/{user}/accept', [FollowController::class, 'acceptRequest'])
+        ->name('follow.request.accept');
+    Route::delete('/follow-requests/{user}', [FollowController::class, 'declineRequest'])
+        ->name('follow.request.decline');
 
     Route::get('/my-profile', [MyAccountController::class, 'index'])->name('profile.index');
     Route::get('/my-connections', [MyAccountController::class, 'connections'])->name('profile.connections');
@@ -79,8 +88,17 @@ Route::middleware('auth')->group(function () {
     Route::post('/send-message', [ChatController::class, 'sendMessage'])
         ->name('messages.send');
 
+    Route::get('/search/users', [SearchController::class, 'users'])
+        ->name('users.search');
+
     Route::post('/posts/{post}/save', [SavedPostController::class, 'toggle'])
         ->name('posts.save');
+
+    Route::get('/blogs', [BlogController::class, 'index'])->name('blogs.index');    Route::post('/blogs', [BlogController::class, 'store'])->name('blogs.store');
+    Route::get('/blogs/{blog}', [BlogController::class, 'show'])->name('blogs.show');
+    Route::get('/blogs/{blog}/edit', [BlogController::class, 'edit'])->name('blogs.edit');
+    Route::put('/blogs/{blog}', [BlogController::class, 'update'])->name('blogs.update');
+    Route::delete('/blogs/{blog}', [BlogController::class, 'destroy'])->name('blogs.destroy');
 
 
 
@@ -90,3 +108,4 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__ . '/auth.php';
+

@@ -3,7 +3,7 @@
 
 <!-- Mirrored from stackbros.in/social/sign-up-advance.html by HTTrack Website Copier/3.x [XR&CO'2014], Mon, 29 Dec 2025 14:43:38 GMT -->
 <head>
-	<title>Social - Network, Community and Event Template</title>
+	<title>Social - Network, Community and Blog Template</title>
 
 	<!-- Meta Tags -->
 	<meta charset="utf-8">

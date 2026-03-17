@@ -30,6 +30,7 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         $data = $request->validated();
+        $data['is_private'] = $request->boolean('is_private');
 
         if ($request->hasFile('image')) {
 
@@ -46,6 +47,23 @@ class ProfileController extends Controller
             $image->move($destinationPath, $filename);
 
             $data['image'] = $filename;
+        }
+
+        if ($request->hasFile('cover_image')) {
+            $cover = $request->file('cover_image');
+            $coverName = time() . '_' . uniqid() . '.' . $cover->getClientOriginalExtension();
+            $coverPath = public_path('assets/images/covers');
+
+            if (!is_dir($coverPath)) {
+                mkdir($coverPath, 0755, true);
+            }
+
+            if ($user->cover_image && file_exists($coverPath . '/' . $user->cover_image)) {
+                unlink($coverPath . '/' . $user->cover_image);
+            }
+
+            $cover->move($coverPath, $coverName);
+            $data['cover_image'] = $coverName;
         }
 
         $user->fill($data);
@@ -122,6 +140,11 @@ class ProfileController extends Controller
                 'formatted_dob' => $user->date_of_birth
                     ? $user->date_of_birth
                     : null,
+            ],
+            'toast' => [
+                'type' => 'success',
+                'title' => 'Profile Updated',
+                'message' => 'Profile updated by @' . $user->username . '.',
             ],
         ]);
     }
